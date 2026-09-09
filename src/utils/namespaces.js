@@ -26,8 +26,15 @@ export const normalizeNamespace = namespace => {
 // Return null for the default declaration, a string for a prefixed declaration,
 // and undefined when the attribute is not a namespace declaration.
 export const namespaceDeclarationPrefix = attr => {
+  // setAttribute('xmlns', uri) creates an attribute without a namespace. Once
+  // serialized it is indistinguishable from a real declaration, so browsers
+  // treat it as one and libraries like svg.js rely on that.
+  if (attr.prefix === null && attr.localName === 'xmlns') {
+    return attr.namespaceURI === null || attr.namespaceURI === xmlns
+      ? null
+      : undefined
+  }
   if (attr.namespaceURI !== xmlns) return undefined
-  if (attr.prefix === null && attr.localName === 'xmlns') return null
   if (attr.prefix === 'xmlns') return attr.localName
   return undefined
 }

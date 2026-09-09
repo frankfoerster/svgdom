@@ -4,6 +4,10 @@ All notable changes to svgdom will be documented in this file.
 
 ## Unreleased
 
+### Fixed
+
+- Serialized `xmlns` attributes created with `setAttribute()` as default namespace declarations instead of throwing, which broke `svg()` for svg.js canvases since 0.1.25 (#141).
+
 ## 0.1.28 - 2026-07-20
 
 ### Added

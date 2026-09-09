@@ -58,13 +58,6 @@ const ensureXMLSerializableName = node => {
   // a valid in-memory DOM state, but well-formed XML serialization must reject
   // it rather than treating the colon as namespace metadata after the fact.
   if (node.localName.includes(':')) throw new Error('Invalid State Error')
-  if (
-    node.nodeType === node.ATTRIBUTE_NODE &&
-    node.namespaceURI === null &&
-    node.localName === 'xmlns'
-  ) {
-    throw new Error('Invalid State Error')
-  }
 }
 
 const serializeAttributes = (node, inheritedBindings) => {
