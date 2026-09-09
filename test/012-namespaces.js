@@ -222,19 +222,31 @@ describe('namespaces', () => {
     assert.strictEqual(foreign.getAttributeNode('h:MiX'), attr)
   })
 
-  it('rejects namespace-null xmlns attributes during XML serialization', () => {
-    const plainDocument = createDocument(null, 'root')
-    plainDocument.documentElement.setAttribute('xmlns', 'urn:pretend')
-    assert.throws(
-      () => plainDocument.documentElement.outerHTML,
-      /Invalid State Error/
+  it('treats a namespace-null xmlns attribute as a default declaration', () => {
+    // svg.js declares the default namespace with setAttribute('xmlns', ...)
+    const document = createSVGDocument()
+    const root = document.documentElement
+    root.setAttribute('xmlns', svg)
+    root.setAttribute('version', '1.1')
+    root.setAttributeNS(xmlns, 'xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    assert.strictEqual(
+      root.outerHTML,
+      '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"></svg>'
     )
 
+    // The element namespace still wins over a contradicting declaration
     const namespacedDocument = createDocument('urn:root', 'root')
     namespacedDocument.documentElement.setAttribute('xmlns', 'urn:pretend')
-    assert.throws(
-      () => namespacedDocument.documentElement.outerHTML,
-      /Invalid State Error/
+    assert.strictEqual(
+      namespacedDocument.documentElement.outerHTML,
+      '<root xmlns="urn:root"></root>'
+    )
+
+    const plainDocument = createDocument(null, 'root')
+    plainDocument.documentElement.setAttribute('xmlns', 'urn:pretend')
+    assert.strictEqual(
+      plainDocument.documentElement.outerHTML,
+      '<root xmlns=""></root>'
     )
   })
 
