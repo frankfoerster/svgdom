@@ -74,6 +74,11 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: svgdom
 
+      # svg.js 3.2.7 pins pnpm 11.13.0, which pnpm refuses as a broken release.
+      - name: Replace the broken pnpm pin of svg.js
+        run: npm pkg set packageManager=pnpm@11.26.0
+        working-directory: svg.js
+
       - name: Install svg.js dependencies
         run: pnpm install --frozen-lockfile
         working-directory: svg.js
