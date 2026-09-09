@@ -4,6 +4,12 @@ All notable changes to svgdom will be documented in this file.
 
 ## Unreleased
 
+## 0.1.29 - 2026-09-09
+
+### Changed
+
+- Moved CI to a working pnpm release, since 11.13.0 is refused as a broken release by the installer.
+
 ### Fixed
 
 - Serialized `xmlns` attributes created with `setAttribute()` as default namespace declarations instead of throwing, which broke `svg()` for svg.js canvases since 0.1.25 (#141).
