@@ -1,7 +1,7 @@
 {
   "name": "svgdom",
   "version": "0.1.28",
-  "packageManager": "pnpm@11.13.0",
+  "packageManager": "pnpm@11.26.0",
   "engines": {
     "node": ">=22.13.0"
   },
