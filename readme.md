@@ -145,4 +145,4 @@ npm run format:check
 npm run build
 ```
 
-`npm run test:package` checks the built ESM and CommonJS entry points and bundled font. `npm run test:watch` starts Vitest in watch mode. `npm run format` formats files with Oxfmt. The build emits JavaScript, declarations, and source maps into `dist/`; npm packages include that build and the bundled font. `npm ci` builds the package automatically. After editing source, rebuild before loading a local checkout with `import` or `require`.
+`npm run test:package` checks the built ESM and CommonJS entry points and bundled font. `npm run test:watch` starts Vitest in watch mode. `npm run format` formats files with Oxfmt. The build emits JavaScript, declarations, and source maps into `dist/`; npm packages include that build and the bundled font. Run `npm run build` explicitly before loading a local checkout with `import` or `require`, and before packing or publishing the package. Rebuild after editing the source.
