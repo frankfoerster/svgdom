@@ -1,5 +1,5 @@
 {
-  "name": "svgdom",
+  "name": "@frankfoerster/svgdom",
   "version": "0.1.29",
   "description": "Straightforward DOM implementation for SVG, HTML and XML",
   "keywords": [
@@ -46,8 +46,7 @@
     "lint": "oxlint --deny-warnings",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "test:package": "npm run build && tsc -p tsconfig.package.json && node scripts/test-package.mjs",
-    "prepare": "npm run build"
+    "test:package": "npm run build && tsc -p tsconfig.package.json && node scripts/test-package.mjs"
   },
   "dependencies": {
     "@carboneio/image-size": "^3.0.0",
