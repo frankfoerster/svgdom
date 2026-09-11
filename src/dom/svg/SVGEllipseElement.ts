@@ -1,9 +1,9 @@
-import { SVGAnimatedLength } from './SVGAnimatedLength.js'
-import { SVGGraphicsElement } from './SVGGraphicsElement.js'
+import { SVGAnimatedLength } from './SVGAnimatedLength.js';
+import { SVGGraphicsElement } from './SVGGraphicsElement.js';
 
 export class SVGEllipseElement extends SVGGraphicsElement {
-  cx = new SVGAnimatedLength(this, 'cx')
-  cy = new SVGAnimatedLength(this, 'cy')
-  rx = new SVGAnimatedLength(this, 'rx')
-  ry = new SVGAnimatedLength(this, 'ry')
+  cx = new SVGAnimatedLength(this, 'cx');
+  cy = new SVGAnimatedLength(this, 'cy');
+  rx = new SVGAnimatedLength(this, 'rx');
+  ry = new SVGAnimatedLength(this, 'ry');
 }

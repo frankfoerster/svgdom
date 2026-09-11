@@ -1,20 +1,20 @@
-import type { Document } from './Document.js'
-import type { Attr } from './Attr.js'
-import type { CharacterData } from './CharacterData.js'
-import type { DocumentType } from './DocumentType.js'
+import type { Document } from './Document.js';
+import type { Attr } from './Attr.js';
+import type { CharacterData } from './CharacterData.js';
+import type { DocumentType } from './DocumentType.js';
 
 export interface NodeProps {
-  local?: boolean
-  nodeValue?: string | null
-  attrs?: Set<Attr>
-  ownerDocument?: Document | null
-  childNodes?: Node[]
+  local?: boolean;
+  nodeValue?: string | null;
+  attrs?: Set<Attr>;
+  ownerDocument?: Document | null;
+  childNodes?: Node[];
 }
-import { extend, extendStatic } from '../utils/objectCreationUtils.js'
+import { extend, extendStatic } from '../utils/objectCreationUtils.js';
 
-import { EventTarget } from './EventTarget.js'
-import { cloneNode } from '../utils/tagUtils.js'
-import { html, normalizeNamespace, xml, xmlns } from '../utils/namespaces.js'
+import { EventTarget } from './EventTarget.js';
+import { cloneNode } from '../utils/tagUtils.js';
+import { html, normalizeNamespace, xml, xmlns } from '../utils/namespaces.js';
 
 const nodeTypes = {
   ELEMENT_NODE: 1,
@@ -29,20 +29,20 @@ const nodeTypes = {
   DOCUMENT_TYPE_NODE: 10,
   DOCUMENT_FRAGMENT_NODE: 11,
   NOTATION_NODE: 12
-}
+};
 
-const domError = (message, code) => Object.assign(new Error(message), { code })
-const hierarchyError = () => domError('Hierarchy Request Error', 3)
-const notFoundError = () => domError('Not Found Error', 8)
-const wrongDocumentError = () => domError('Wrong Document Error', 4)
+const domError = (message, code) => Object.assign(new Error(message), { code });
+const hierarchyError = () => domError('Hierarchy Request Error', 3);
+const notFoundError = () => domError('Not Found Error', 8);
+const wrongDocumentError = () => domError('Wrong Document Error', 4);
 
 const associatedDocument = node =>
-  node.nodeType === Node.DOCUMENT_NODE ? node : node.ownerDocument
+  node.nodeType === Node.DOCUMENT_NODE ? node : node.ownerDocument;
 
 const canHaveChildren = node =>
   node.nodeType === Node.DOCUMENT_NODE ||
   node.nodeType === Node.DOCUMENT_FRAGMENT_NODE ||
-  node.nodeType === Node.ELEMENT_NODE
+  node.nodeType === Node.ELEMENT_NODE;
 
 const insertableNodeTypes = new Set([
   nodeTypes.ELEMENT_NODE,
@@ -51,20 +51,20 @@ const insertableNodeTypes = new Set([
   nodeTypes.PROCESSING_INSTRUCTION_NODE,
   nodeTypes.COMMENT_NODE,
   nodeTypes.DOCUMENT_TYPE_NODE
-])
+]);
 
 // Tree insertion adopts nodes into the destination document. Ownership must be
 // updated for the complete subtree, including attributes that are not children.
 const setOwnerDocument = (node, document) => {
-  if (!document || node.nodeType === Node.DOCUMENT_NODE) return
-  node.ownerDocument = document
+  if (!document || node.nodeType === Node.DOCUMENT_NODE) return;
+  node.ownerDocument = document;
   for (const attr of node.attrs) {
-    attr.ownerDocument = document
+    attr.ownerDocument = document;
   }
   for (const child of node.childNodes) {
-    setOwnerDocument(child, document)
+    setOwnerDocument(child, document);
   }
-}
+};
 
 // Callers pass the complete candidate list, not only the inserted nodes. This
 // lets replacement and parser paths enforce ordering and cardinality uniformly.
@@ -73,41 +73,41 @@ export const validateDocumentChildren = children => {
     Node.ELEMENT_NODE,
     Node.COMMENT_NODE,
     Node.DOCUMENT_TYPE_NODE
-  ])
+  ]);
   if (children.some(node => !allowed.has(node.nodeType))) {
-    throw hierarchyError()
+    throw hierarchyError();
   }
 
-  const elements = children.filter(node => node.nodeType === Node.ELEMENT_NODE)
+  const elements = children.filter(node => node.nodeType === Node.ELEMENT_NODE);
   const doctypes = children.filter(
     node => node.nodeType === Node.DOCUMENT_TYPE_NODE
-  )
-  if (elements.length > 1 || doctypes.length > 1) throw hierarchyError()
+  );
+  if (elements.length > 1 || doctypes.length > 1) throw hierarchyError();
   if (
     elements.length &&
     doctypes.length &&
     children.indexOf(doctypes[0]) > children.indexOf(elements[0])
   ) {
-    throw hierarchyError()
+    throw hierarchyError();
   }
-}
+};
 
 const validateInsertedNodes = (parent, nodes, childrenAfterInsertion) => {
-  if (!canHaveChildren(parent)) throw hierarchyError()
+  if (!canHaveChildren(parent)) throw hierarchyError();
   if (nodes.some(node => !insertableNodeTypes.has(node.nodeType))) {
-    throw hierarchyError()
+    throw hierarchyError();
   }
   for (const node of nodes) {
     for (let ancestor = parent; ancestor; ancestor = ancestor.parentNode) {
-      if (ancestor === node) throw hierarchyError()
+      if (ancestor === node) throw hierarchyError();
     }
   }
   if (parent.nodeType === Node.DOCUMENT_NODE) {
-    validateDocumentChildren(childrenAfterInsertion)
+    validateDocumentChildren(childrenAfterInsertion);
   } else if (nodes.some(node => node.nodeType === Node.DOCUMENT_TYPE_NODE)) {
-    throw hierarchyError()
+    throw hierarchyError();
   }
-}
+};
 
 const insertionPlan = (
   parent,
@@ -116,19 +116,19 @@ const insertionPlan = (
   replacedNode = null,
   replaceAll = false
 ) => {
-  const suppliedNodes = Array.isArray(node) ? node : [node]
+  const suppliedNodes = Array.isArray(node) ? node : [node];
   if (suppliedNodes.some(node => !(node instanceof Node))) {
-    throw hierarchyError()
+    throw hierarchyError();
   }
-  if (before != null && before.parentNode !== parent) throw notFoundError()
+  if (before != null && before.parentNode !== parent) throw notFoundError();
   if (replacedNode != null && replacedNode.parentNode !== parent) {
-    throw notFoundError()
+    throw notFoundError();
   }
   // Validate the supplied fragment before expanding it. Otherwise inserting a
   // fragment into itself would appear to be an empty, and therefore valid, edit.
   for (const suppliedNode of suppliedNodes) {
     for (let ancestor = parent; ancestor; ancestor = ancestor.parentNode) {
-      if (ancestor === suppliedNode) throw hierarchyError()
+      if (ancestor === suppliedNode) throw hierarchyError();
     }
   }
 
@@ -136,175 +136,175 @@ const insertionPlan = (
     node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
       ? node.childNodes.slice()
       : node
-  )
-  const removed = new Set(nodes)
+  );
+  const removed = new Set(nodes);
   const replacedNodes = replaceAll
     ? parent.childNodes.slice()
     : replacedNode
       ? [replacedNode]
-      : []
-  for (const replaced of replacedNodes) removed.add(replaced)
+      : [];
+  for (const replaced of replacedNodes) removed.add(replaced);
 
   // Calculate the final child list without mutating either tree. References
   // that are themselves moving resolve to the next child that remains in place.
-  const remaining = parent.childNodes.filter(child => !removed.has(child))
+  const remaining = parent.childNodes.filter(child => !removed.has(child));
 
-  let index
+  let index;
   if (replaceAll) {
-    index = 0
+    index = 0;
   } else if (replacedNode) {
     const following = parent.childNodes.find(
       (child, childIndex) =>
         childIndex > parent.childNodes.indexOf(replacedNode) &&
         !removed.has(child)
-    )
-    index = following ? remaining.indexOf(following) : remaining.length
+    );
+    index = following ? remaining.indexOf(following) : remaining.length;
   } else if (before == null) {
-    index = remaining.length
+    index = remaining.length;
   } else if (removed.has(before)) {
     const following = parent.childNodes.find(
       (child, childIndex) =>
         childIndex > parent.childNodes.indexOf(before) && !removed.has(child)
-    )
-    index = following ? remaining.indexOf(following) : remaining.length
+    );
+    index = following ? remaining.indexOf(following) : remaining.length;
   } else {
-    index = remaining.indexOf(before)
+    index = remaining.indexOf(before);
   }
 
-  const childrenAfterInsertion = remaining.slice()
-  childrenAfterInsertion.splice(index, 0, ...nodes)
-  validateInsertedNodes(parent, nodes, childrenAfterInsertion)
-  return { nodes, index, replacedNodes }
-}
+  const childrenAfterInsertion = remaining.slice();
+  childrenAfterInsertion.splice(index, 0, ...nodes);
+  validateInsertedNodes(parent, nodes, childrenAfterInsertion);
+  return { nodes, index, replacedNodes };
+};
 
 const applyInsertionPlan = (parent, plan) => {
-  const document = associatedDocument(parent)
+  const document = associatedDocument(parent);
 
   // Validation is complete before this commit phase starts, so detaching a
   // source node cannot leave either tree half-mutated after an error.
   for (const node of plan.nodes) {
     if (node.parentNode) {
-      const index = node.parentNode.childNodes.indexOf(node)
-      if (index !== -1) node.parentNode.childNodes.splice(index, 1)
-      node.parentNode = null
+      const index = node.parentNode.childNodes.indexOf(node);
+      if (index !== -1) node.parentNode.childNodes.splice(index, 1);
+      node.parentNode = null;
     }
   }
 
   for (const replacedNode of plan.replacedNodes) {
-    const index = parent.childNodes.indexOf(replacedNode)
-    if (index !== -1) parent.childNodes.splice(index, 1)
-    replacedNode.parentNode = null
+    const index = parent.childNodes.indexOf(replacedNode);
+    if (index !== -1) parent.childNodes.splice(index, 1);
+    replacedNode.parentNode = null;
   }
 
   // Adoption happens only after every old parent link has been removed. The
   // final splice then publishes the already-consistent subtree in one step.
   for (const node of plan.nodes) {
-    setOwnerDocument(node, document)
-    node.parentNode = parent
+    setOwnerDocument(node, document);
+    node.parentNode = parent;
   }
-  parent.childNodes.splice(plan.index, 0, ...plan.nodes)
-}
+  parent.childNodes.splice(plan.index, 0, ...plan.nodes);
+};
 
 export const replaceAllChildren = (parent, nodes) => {
-  const plan = insertionPlan(parent, nodes, null, null, true)
-  applyInsertionPlan(parent, plan)
-}
+  const plan = insertionPlan(parent, nodes, null, null, true);
+  applyInsertionPlan(parent, plan);
+};
 
 export class Node extends EventTarget {
-  declare static ELEMENT_NODE: 1
-  declare static ATTRIBUTE_NODE: 2
-  declare static TEXT_NODE: 3
-  declare static CDATA_SECTION_NODE: 4
-  declare static ENTITY_REFERENCE_NODE: 5
-  declare static ENTITY_NODE: 6
-  declare static PROCESSING_INSTRUCTION_NODE: 7
-  declare static COMMENT_NODE: 8
-  declare static DOCUMENT_NODE: 9
-  declare static DOCUMENT_TYPE_NODE: 10
-  declare static DOCUMENT_FRAGMENT_NODE: 11
-  declare static NOTATION_NODE: 12
+  declare static ELEMENT_NODE: 1;
+  declare static ATTRIBUTE_NODE: 2;
+  declare static TEXT_NODE: 3;
+  declare static CDATA_SECTION_NODE: 4;
+  declare static ENTITY_REFERENCE_NODE: 5;
+  declare static ENTITY_NODE: 6;
+  declare static PROCESSING_INSTRUCTION_NODE: 7;
+  declare static COMMENT_NODE: 8;
+  declare static DOCUMENT_NODE: 9;
+  declare static DOCUMENT_TYPE_NODE: 10;
+  declare static DOCUMENT_FRAGMENT_NODE: 11;
+  declare static NOTATION_NODE: 12;
 
-  declare localName: string
-  declare prefix: string | null
-  declare nodeName: string
-  declare namespaceURI: string | null
-  declare nodeType: number
-  declare childNodes: any[]
-  declare attrs: Set<Attr>
-  declare ownerDocument: Document | null
-  declare parentNode: any
+  declare localName: string;
+  declare prefix: string | null;
+  declare nodeName: string;
+  declare namespaceURI: string | null;
+  declare nodeType: number;
+  declare childNodes: any[];
+  declare attrs: Set<Attr>;
+  declare ownerDocument: Document | null;
+  declare parentNode: any;
 
   constructor(name = '', props: NodeProps = {}, ns: string | null = null) {
-    super()
+    super();
 
     // If props.local is true, the element was Node was created with the non-namespace function
     // that means whatever was passed as name is the local name even though it might look like a prefix
     if (name.includes(':') && !props.local) {
-      ;[this.prefix, this.localName] = name.split(':')
+      [this.prefix, this.localName] = name.split(':');
     } else {
-      this.localName = name
-      this.prefix = null
+      this.localName = name;
+      this.prefix = null;
     }
 
     // Follow spec and uppercase nodeName for html
     this.nodeName =
       ns === html && props.ownerDocument?.namespaceURI === html
         ? name.toUpperCase()
-        : name
+        : name;
 
-    this.namespaceURI = ns
-    this.nodeType = Node.ELEMENT_NODE
-    this.nodeValue = props.nodeValue != null ? props.nodeValue : null
-    this.childNodes = []
+    this.namespaceURI = ns;
+    this.nodeType = Node.ELEMENT_NODE;
+    this.nodeValue = props.nodeValue != null ? props.nodeValue : null;
+    this.childNodes = [];
 
-    this.attrs = props.attrs || new Set()
+    this.attrs = props.attrs || new Set();
 
-    this.ownerDocument = props.ownerDocument || null
-    this.parentNode = null
+    this.ownerDocument = props.ownerDocument || null;
+    this.parentNode = null;
 
     if (props.childNodes) {
       for (let i = 0, il = props.childNodes.length; i < il; ++i) {
-        this.appendChild(props.childNodes[i])
+        this.appendChild(props.childNodes[i]);
       }
     }
   }
 
   appendChild<T extends Node>(node: T): T {
-    return this.insertBefore(node)
+    return this.insertBefore(node);
   }
 
   cloneNode(deep = false): this {
-    return cloneNode(this, deep)
+    return cloneNode(this, deep);
   }
 
   contains(node: Node | null): boolean {
     for (let current = node; current; current = current.parentNode) {
-      if (current === this) return true
+      if (current === this) return true;
     }
-    return false
+    return false;
   }
 
   getRootNode(): Node {
-    if (!this.parentNode || this.nodeType === Node.DOCUMENT_NODE) return this
-    return this.parentNode.getRootNode()
+    if (!this.parentNode || this.nodeType === Node.DOCUMENT_NODE) return this;
+    return this.parentNode.getRootNode();
   }
 
   hasChildNodes() {
-    return !!this.childNodes.length
+    return !!this.childNodes.length;
   }
 
   insertBefore<T extends Node>(node: T, before: Node | null = null): T {
-    const plan = insertionPlan(this, node, before)
-    applyInsertionPlan(this, plan)
-    return node
+    const plan = insertionPlan(this, node, before);
+    applyInsertionPlan(this, plan);
+    return node;
   }
 
   isDefaultNamespace(namespaceURI: string | null) {
-    return this.lookupNamespaceURI(null) === normalizeNamespace(namespaceURI)
+    return this.lookupNamespaceURI(null) === normalizeNamespace(namespaceURI);
   }
 
   isEqualNode(node: unknown): boolean {
-    if (!(node instanceof Node)) return false
+    if (!(node instanceof Node)) return false;
     if (
       this.nodeType !== node.nodeType ||
       this.nodeName !== node.nodeName ||
@@ -315,13 +315,13 @@ export class Node extends EventTarget {
       this.attrs.size !== node.attrs.size ||
       this.childNodes.length !== node.childNodes.length
     ) {
-      return false
+      return false;
     }
 
     // Attribute order is not significant even though svgdom stores attrs in a
     // Set, so compare each attribute structurally rather than by iteration slot.
     for (const attr of this.attrs) {
-      if (![...node.attrs].some(other => attr.isEqualNode(other))) return false
+      if (![...node.attrs].some(other => attr.isEqualNode(other))) return false;
     }
 
     if (this.nodeType === Node.DOCUMENT_TYPE_NODE) {
@@ -333,17 +333,17 @@ export class Node extends EventTarget {
         (this as unknown as DocumentType).internalSubset !==
           (node as DocumentType).internalSubset
       ) {
-        return false
+        return false;
       }
     }
 
     return this.childNodes.every((child, index) =>
       child.isEqualNode(node.childNodes[index])
-    )
+    );
   }
 
   isSameNode(node: Node | null) {
-    return this === node
+    return this === node;
   }
 
   lookupNamespacePrefix(
@@ -352,14 +352,14 @@ export class Node extends EventTarget {
   ): string | null {
     // `originalElement` prevents returning an ancestor prefix that has been
     // rebound between that ancestor and the node where lookup began.
-    originalElement = originalElement || this
+    originalElement = originalElement || this;
 
     if (
       this.namespaceURI === namespaceURI &&
       this.prefix &&
       originalElement.lookupNamespaceURI(this.prefix) === namespaceURI
     ) {
-      return this.prefix
+      return this.prefix;
     }
 
     for (const attr of this.attrs) {
@@ -369,7 +369,7 @@ export class Node extends EventTarget {
         attr.value === namespaceURI &&
         originalElement.lookupNamespaceURI(attr.localName) === namespaceURI
       ) {
-        return attr.localName
+        return attr.localName;
       }
     }
 
@@ -377,31 +377,31 @@ export class Node extends EventTarget {
       return this.parentNode.lookupNamespacePrefix(
         namespaceURI,
         originalElement
-      )
+      );
     }
-    return null
+    return null;
   }
 
   lookupNamespaceURI(prefix: string | null): string | null {
-    prefix = normalizeNamespace(prefix)
+    prefix = normalizeNamespace(prefix);
 
     switch (this.nodeType) {
       case Node.ELEMENT_NODE:
         // These two prefixes are implicitly bound and need no xmlns attribute.
-        if (prefix === 'xml') return xml
-        if (prefix === 'xmlns') return xmlns
+        if (prefix === 'xml') return xml;
+        if (prefix === 'xmlns') return xmlns;
 
         if (this.namespaceURI != null && this.prefix === prefix) {
-          return this.namespaceURI
+          return this.namespaceURI;
         }
 
         for (const attr of this.attrs) {
           // Namespace declarations are Attr nodes in the XMLNS namespace. attrs
           // is a Set, so inspect the nodes rather than treating it like a Map.
-          if (attr.namespaceURI !== xmlns) continue
+          if (attr.namespaceURI !== xmlns) continue;
 
           if (attr.prefix === 'xmlns' && attr.localName === prefix) {
-            return attr.value || null
+            return attr.value || null;
           }
 
           if (
@@ -409,138 +409,138 @@ export class Node extends EventTarget {
             attr.localName === 'xmlns' &&
             prefix === null
           ) {
-            return attr.value || null
+            return attr.value || null;
           }
         }
 
         // Namespace scope follows parent elements; Document itself introduces no
         // additional bindings.
         if (this.parentNode && this.parentNode.nodeType === Node.ELEMENT_NODE) {
-          return this.parentNode.lookupNamespaceURI(prefix)
+          return this.parentNode.lookupNamespaceURI(prefix);
         }
-        return null
+        return null;
       case Node.DOCUMENT_NODE:
         return (this as unknown as Document).documentElement
           ? (this as unknown as Document).documentElement.lookupNamespaceURI(
               prefix
             )
-          : null
+          : null;
       case Node.ENTITY_NODE:
       case Node.NOTATION_NODE:
       case Node.DOCUMENT_TYPE_NODE:
       case Node.DOCUMENT_FRAGMENT_NODE:
-        return null
+        return null;
       case Node.ATTRIBUTE_NODE:
         if ((this as unknown as Attr).ownerElement) {
           return (this as unknown as Attr).ownerElement.lookupNamespaceURI(
             prefix
-          )
+          );
         }
-        return null
+        return null;
       default:
         if (this.parentNode && this.parentNode.nodeType === Node.ELEMENT_NODE) {
-          return this.parentNode.lookupNamespaceURI(prefix)
+          return this.parentNode.lookupNamespaceURI(prefix);
         }
-        return null
+        return null;
     }
   }
 
   lookupPrefix(namespaceValue: unknown): string | null {
-    const namespaceURI = normalizeNamespace(namespaceValue)
-    if (namespaceURI === null) return null
+    const namespaceURI = normalizeNamespace(namespaceValue);
+    if (namespaceURI === null) return null;
 
-    const type = this.nodeType
+    const type = this.nodeType;
 
     switch (type) {
       case Node.ELEMENT_NODE:
-        return this.lookupNamespacePrefix(namespaceURI, this)
+        return this.lookupNamespacePrefix(namespaceURI, this);
       case Node.DOCUMENT_NODE:
         return (this as unknown as Document).documentElement
           ? (this as unknown as Document).documentElement.lookupNamespacePrefix(
               namespaceURI,
               (this as unknown as Document).documentElement
             )
-          : null
+          : null;
       case Node.ENTITY_NODE:
       case Node.NOTATION_NODE:
       case Node.DOCUMENT_FRAGMENT_NODE:
       case Node.DOCUMENT_TYPE_NODE:
-        return null // type is unknown
+        return null; // type is unknown
       case Node.ATTRIBUTE_NODE:
         if ((this as unknown as Attr).ownerElement) {
           return (this as unknown as Attr).ownerElement.lookupNamespacePrefix(
             namespaceURI,
             (this as unknown as Attr).ownerElement
-          )
+          );
         }
-        return null
+        return null;
       default:
         if (this.parentNode && this.parentNode.nodeType === Node.ELEMENT_NODE) {
           return this.parentNode.lookupNamespacePrefix(
             namespaceURI,
             this.parentNode
-          )
+          );
         }
-        return null
+        return null;
     }
   }
 
   normalize() {
-    let index = 0
+    let index = 0;
     while (index < this.childNodes.length) {
-      const child = this.childNodes[index]
-      child.normalize()
+      const child = this.childNodes[index];
+      child.normalize();
 
       if (child.nodeType !== Node.TEXT_NODE) {
-        index++
-        continue
+        index++;
+        continue;
       }
 
       if (!child.data) {
         // The next child shifts into this index and still needs processing.
-        this.removeChild(child)
-        continue
+        this.removeChild(child);
+        continue;
       }
 
       while (this.childNodes[index + 1]?.nodeType === Node.TEXT_NODE) {
-        const adjacent = this.childNodes[index + 1]
-        child.appendData(adjacent.data)
-        this.removeChild(adjacent)
+        const adjacent = this.childNodes[index + 1];
+        child.appendData(adjacent.data);
+        this.removeChild(adjacent);
       }
-      index++
+      index++;
     }
   }
 
   removeChild<T extends Node>(node: T): T {
-    const index = this.childNodes.indexOf(node)
-    if (index === -1) throw notFoundError()
-    this.childNodes.splice(index, 1)
-    node.parentNode = null
-    return node
+    const index = this.childNodes.indexOf(node);
+    if (index === -1) throw notFoundError();
+    this.childNodes.splice(index, 1);
+    node.parentNode = null;
+    return node;
   }
 
   replaceChild<T extends Node>(newChild: Node, oldChild: T): T {
     if (newChild === oldChild) {
-      if (oldChild.parentNode !== this) throw notFoundError()
-      return oldChild
+      if (oldChild.parentNode !== this) throw notFoundError();
+      return oldChild;
     }
-    const plan = insertionPlan(this, newChild, oldChild, oldChild)
-    applyInsertionPlan(this, plan)
-    return oldChild
+    const plan = insertionPlan(this, newChild, oldChild, oldChild);
+    applyInsertionPlan(this, plan);
+    return oldChild;
   }
 
   get nextSibling() {
     const child =
       this.parentNode &&
-      this.parentNode.childNodes[this.parentNode.childNodes.indexOf(this) + 1]
-    return child || null
+      this.parentNode.childNodes[this.parentNode.childNodes.indexOf(this) + 1];
+    return child || null;
   }
 
   get previousSibling() {
     const child =
       this.parentNode &&
-      this.parentNode.childNodes[this.parentNode.childNodes.indexOf(this) - 1]
-    return child || null
+      this.parentNode.childNodes[this.parentNode.childNodes.indexOf(this) - 1];
+    return child || null;
   }
 
   get textContent(): string | null {
@@ -549,15 +549,15 @@ export class Node extends EventTarget {
       this.nodeType === Node.CDATA_SECTION_NODE ||
       this.nodeType === Node.COMMENT_NODE
     ) {
-      return (this as unknown as CharacterData).data
+      return (this as unknown as CharacterData).data;
     }
     if (this.nodeType === Node.ATTRIBUTE_NODE)
-      return (this as unknown as Attr).value
+      return (this as unknown as Attr).value;
     if (
       this.nodeType !== Node.ELEMENT_NODE &&
       this.nodeType !== Node.DOCUMENT_FRAGMENT_NODE
     ) {
-      return null
+      return null;
     }
 
     // Element textContent includes descendant text and CDATA, but comments and
@@ -567,54 +567,54 @@ export class Node extends EventTarget {
         child.nodeType === Node.TEXT_NODE ||
         child.nodeType === Node.CDATA_SECTION_NODE
       ) {
-        return text + child.data
+        return text + child.data;
       }
       return child.nodeType === Node.ELEMENT_NODE
         ? text + child.textContent
-        : text
-    }, '')
+        : text;
+    }, '');
   }
 
   set textContent(text: unknown) {
-    text = text == null ? '' : String(text)
+    text = text == null ? '' : String(text);
     if (
       this.nodeType === Node.TEXT_NODE ||
       this.nodeType === Node.CDATA_SECTION_NODE ||
       this.nodeType === Node.COMMENT_NODE
     ) {
-      ;(this as unknown as CharacterData).data = text
-      return
+      (this as unknown as CharacterData).data = text;
+      return;
     }
     if (this.nodeType === Node.ATTRIBUTE_NODE) {
-      ;(this as unknown as Attr).value = text
-      return
+      (this as unknown as Attr).value = text;
+      return;
     }
     if (
       this.nodeType !== Node.ELEMENT_NODE &&
       this.nodeType !== Node.DOCUMENT_FRAGMENT_NODE
     ) {
-      return
+      return;
     }
-    while (this.firstChild) this.removeChild(this.firstChild)
-    if (!text) return
-    const document = associatedDocument(this)
-    if (!document) throw wrongDocumentError()
-    this.appendChild(document.createTextNode(text))
+    while (this.firstChild) this.removeChild(this.firstChild);
+    if (!text) return;
+    const document = associatedDocument(this);
+    if (!document) throw wrongDocumentError();
+    this.appendChild(document.createTextNode(text));
   }
 
   get lastChild() {
-    return this.childNodes[this.childNodes.length - 1] || null
+    return this.childNodes[this.childNodes.length - 1] || null;
   }
 
   get firstChild() {
-    return this.childNodes[0] || null
+    return this.childNodes[0] || null;
   }
 }
 
-extendStatic(Node, nodeTypes)
-extend(Node, nodeTypes)
+extendStatic(Node, nodeTypes);
+extend(Node, nodeTypes);
 
 export interface Node extends NodeConstants {
-  nodeValue: string | null
+  nodeValue: string | null;
 }
-type NodeConstants = typeof nodeTypes
+type NodeConstants = typeof nodeTypes;

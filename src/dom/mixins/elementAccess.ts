@@ -1,18 +1,18 @@
-import type { Element } from '../Element.js'
-import { NodeFilter } from '../NodeFilter.js'
-import { NodeIterator } from '../../utils/NodeIterator.js'
-import { normalizeNamespace } from '../../utils/namespaces.js'
+import type { Element } from '../Element.js';
+import { NodeFilter } from '../NodeFilter.js';
+import { NodeIterator } from '../../utils/NodeIterator.js';
+import { normalizeNamespace } from '../../utils/namespaces.js';
 
 const hasClass = (node, name) => {
-  const requested = String(name).trim().split(/\s+/).filter(Boolean)
-  if (!requested.length) return false
-  const classList = (node.className || '').split(/\s+/).filter(Boolean)
-  return requested.every(className => classList.includes(className))
-}
+  const requested = String(name).trim().split(/\s+/).filter(Boolean);
+  if (!requested.length) return false;
+  const classList = (node.className || '').split(/\s+/).filter(Boolean);
+  return requested.every(className => classList.includes(className));
+};
 
 const elementAccess = {
   getElementsByTagName(name: string): Element[] {
-    name = String(name)
+    name = String(name);
     const iter = new NodeIterator(
       this,
       NodeFilter.SHOW_ELEMENT,
@@ -21,28 +21,28 @@ const elementAccess = {
           ? NodeFilter.FILTER_ACCEPT
           : NodeFilter.FILTER_IGNORE,
       false
-    )
-    return [...iter]
+    );
+    return [...iter];
   },
 
   getElementsByTagNameNS(ns: string | null, name: string): Element[] {
     // Empty namespace and wildcard namespace are distinct inputs.
-    ns = ns === '*' ? '*' : normalizeNamespace(ns)
-    name = String(name)
+    ns = ns === '*' ? '*' : normalizeNamespace(ns);
+    name = String(name);
 
     const iter = new NodeIterator(
       this,
       NodeFilter.SHOW_ELEMENT,
       node => {
-        const namespaceMatches = ns === '*' || node.namespaceURI === ns
-        const localNameMatches = name === '*' || node.localName === name
+        const namespaceMatches = ns === '*' || node.namespaceURI === ns;
+        const localNameMatches = name === '*' || node.localName === name;
         return namespaceMatches && localNameMatches
           ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_IGNORE
+          : NodeFilter.FILTER_IGNORE;
       },
       false
-    )
-    return [...iter]
+    );
+    return [...iter];
   },
 
   getElementsByClassName(name: string): Element[] {
@@ -54,9 +54,9 @@ const elementAccess = {
           ? NodeFilter.FILTER_ACCEPT
           : NodeFilter.FILTER_IGNORE,
       false
-    )
-    return [...iter]
+    );
+    return [...iter];
   }
-}
+};
 
-export { elementAccess }
+export { elementAccess };

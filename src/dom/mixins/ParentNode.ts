@@ -1,13 +1,13 @@
-import type { Element } from '../Element.js'
-import { CssQuery } from '../../other/CssQuery.js'
-import { NodeIterator } from '../../utils/NodeIterator.js'
-import { NodeFilter } from '../NodeFilter.js'
-import { nodesToNode, nodesToNodes } from '../../utils/nodesToNode.js'
-import { replaceAllChildren } from '../Node.js'
+import type { Element } from '../Element.js';
+import { CssQuery } from '../../other/CssQuery.js';
+import { NodeIterator } from '../../utils/NodeIterator.js';
+import { NodeFilter } from '../NodeFilter.js';
+import { nodesToNode, nodesToNodes } from '../../utils/nodesToNode.js';
+import { replaceAllChildren } from '../Node.js';
 
 // https://dom.spec.whatwg.org/#parentnode
 const runQuery = (root, selector, single = false) => {
-  const cssQuery = new CssQuery(selector)
+  const cssQuery = new CssQuery(selector);
   const iter = new NodeIterator(
     root,
     NodeFilter.SHOW_ELEMENT,
@@ -16,27 +16,27 @@ const runQuery = (root, selector, single = false) => {
         ? NodeFilter.FILTER_ACCEPT
         : NodeFilter.FILTER_IGNORE,
     false
-  )
+  );
 
-  const nodes = []
+  const nodes = [];
   for (const node of iter) {
-    nodes.push(node)
-    if (single) break
+    nodes.push(node);
+    if (single) break;
   }
 
-  return nodes
-}
+  return nodes;
+};
 
 export interface ParentNode {
-  querySelector<T extends Element = Element>(query: string): T | null
-  querySelectorAll<T extends Element = Element>(query: string): T[]
-  prepend(...nodes: unknown[]): void
-  append(...nodes: unknown[]): void
-  replaceChildren(...nodes: unknown[]): void
-  readonly children: Element[]
-  readonly firstElementChild: Element | null
-  readonly lastElementChild: Element | null
-  readonly childElementCount: number
+  querySelector<T extends Element = Element>(query: string): T | null;
+  querySelectorAll<T extends Element = Element>(query: string): T[];
+  prepend(...nodes: unknown[]): void;
+  append(...nodes: unknown[]): void;
+  replaceChildren(...nodes: unknown[]): void;
+  readonly children: Element[];
+  readonly firstElementChild: Element | null;
+  readonly lastElementChild: Element | null;
+  readonly childElementCount: number;
 }
 
 const parentNodeMethods: Pick<
@@ -48,72 +48,72 @@ const parentNodeMethods: Pick<
   | 'replaceChildren'
 > = {
   querySelectorAll<T extends Element = Element>(query: string): T[] {
-    return runQuery(this, query) as T[]
+    return runQuery(this, query) as T[];
   },
 
   querySelector<T extends Element = Element>(query: string): T | null {
-    return runQuery(this, query, true)[0] || null
+    return runQuery(this, query, true)[0] || null;
   },
 
   prepend(...nodes) {
     const document =
-      this.nodeType === this.DOCUMENT_NODE ? this : this.ownerDocument
-    const node = nodesToNode(nodes, document)
+      this.nodeType === this.DOCUMENT_NODE ? this : this.ownerDocument;
+    const node = nodesToNode(nodes, document);
 
-    this.insertBefore(node, this.firstChild)
+    this.insertBefore(node, this.firstChild);
   },
 
   append(...nodes) {
     const document =
-      this.nodeType === this.DOCUMENT_NODE ? this : this.ownerDocument
-    const node = nodesToNode(nodes, document)
-    this.appendChild(node)
+      this.nodeType === this.DOCUMENT_NODE ? this : this.ownerDocument;
+    const node = nodesToNode(nodes, document);
+    this.appendChild(node);
   },
 
   replaceChildren(...nodes) {
     const document =
-      this.nodeType === this.DOCUMENT_NODE ? this : this.ownerDocument
+      this.nodeType === this.DOCUMENT_NODE ? this : this.ownerDocument;
     // Keep nodes separate for the mutation planner. Building a fragment here
     // would detach existing children before replacement validation succeeds.
-    replaceAllChildren(this, nodesToNodes(nodes, document))
+    replaceAllChildren(this, nodesToNodes(nodes, document));
   }
-}
+};
 
-const ParentNode = parentNodeMethods as ParentNode
+const ParentNode = parentNodeMethods as ParentNode;
 
 Object.defineProperties(ParentNode, {
   children: {
     get() {
       return this.childNodes.filter(function (node) {
-        return node.nodeType === node.ELEMENT_NODE
-      })
+        return node.nodeType === node.ELEMENT_NODE;
+      });
     }
   },
   firstElementChild: {
     get() {
       for (const node of this.childNodes) {
         if (node && node.nodeType === node.ELEMENT_NODE) {
-          return node
+          return node;
         }
       }
-      return null
+      return null;
     }
   },
   lastElementChild: {
     get() {
       for (const node of this.childNodes.slice().reverse()) {
         if (node && node.nodeType === node.ELEMENT_NODE) {
-          return node
+          return node;
         }
       }
-      return null
+      return null;
     }
   },
   childElementCount: {
     get() {
-      return this.children.length
+      return this.children.length;
     }
   }
-})
+});
 
-export { ParentNode }
+export { ParentNode };

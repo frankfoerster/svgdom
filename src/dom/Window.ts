@@ -1,50 +1,50 @@
-import { extend } from '../utils/objectCreationUtils.js'
-import { EventTarget } from './EventTarget.js'
-import { Node } from './Node.js'
-import { Document } from './Document.js'
-import { DocumentFragment } from './DocumentFragment.js'
-import { Text } from './Text.js'
-import { CustomEvent } from './CustomEvent.js'
-import { CSS } from './CSS.js'
-import { CSSStyleDeclaration } from './CSSStyleDeclaration.js'
-import { Event } from './Event.js'
-import { Element } from './Element.js'
-import { Attr } from './Attr.js'
-import { HTMLImageElement } from './html/HTMLImageElement.js'
-import { HTMLLinkElement } from './html/HTMLLinkElement.js'
-import { HTMLScriptElement } from './html/HTMLScriptElement.js'
-import { HTMLElement } from './html/HTMLElement.js'
-import { SVGPoint } from './svg/SVGPoint.js'
-import { SVGMatrix } from './svg/SVGMatrix.js'
-import { SVGElement } from './svg/SVGElement.js'
-import { SVGSVGElement } from './svg/SVGSVGElement.js'
-import { SVGPathElement } from './svg/SVGPathElement.js'
-import { SVGGraphicsElement } from './svg/SVGGraphicsElement.js'
-import { SVGTextContentElement } from './svg/SVGTextContentElement.js'
-import { camelCase } from '../utils/strUtils.js'
-import * as defaults from '../utils/defaults.js'
+import { extend } from '../utils/objectCreationUtils.js';
+import { EventTarget } from './EventTarget.js';
+import { Node } from './Node.js';
+import { Document } from './Document.js';
+import { DocumentFragment } from './DocumentFragment.js';
+import { Text } from './Text.js';
+import { CustomEvent } from './CustomEvent.js';
+import { CSS } from './CSS.js';
+import { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
+import { Event } from './Event.js';
+import { Element } from './Element.js';
+import { Attr } from './Attr.js';
+import { HTMLImageElement } from './html/HTMLImageElement.js';
+import { HTMLLinkElement } from './html/HTMLLinkElement.js';
+import { HTMLScriptElement } from './html/HTMLScriptElement.js';
+import { HTMLElement } from './html/HTMLElement.js';
+import { SVGPoint } from './svg/SVGPoint.js';
+import { SVGMatrix } from './svg/SVGMatrix.js';
+import { SVGElement } from './svg/SVGElement.js';
+import { SVGSVGElement } from './svg/SVGSVGElement.js';
+import { SVGPathElement } from './svg/SVGPathElement.js';
+import { SVGGraphicsElement } from './svg/SVGGraphicsElement.js';
+import { SVGTextContentElement } from './svg/SVGTextContentElement.js';
+import { camelCase } from '../utils/strUtils.js';
+import * as defaults from '../utils/defaults.js';
 
 export class Window<
   Namespace extends string | null = string | null
 > extends EventTarget {
-  declare document: Document<Namespace>
-  declare self: Window<Namespace>
-  declare Image: new (width?: number, height?: number) => HTMLImageElement
+  declare document: Document<Namespace>;
+  declare self: Window<Namespace>;
+  declare Image: new (width?: number, height?: number) => HTMLImageElement;
 
   constructor() {
-    super()
-    this.document = new Document<Namespace>()
-    this.document.defaultView = this
-    this.self = this
-    const doc = this.document
+    super();
+    this.document = new Document<Namespace>();
+    this.document.defaultView = this;
+    this.self = this;
+    const doc = this.document;
     this.Image = class {
       constructor(width?: number, height?: number) {
-        const img = doc.createElement('img') as HTMLImageElement
-        if (width != null) img.setAttribute('width', width)
-        if (height != null) img.setAttribute('height', height)
-        return img
+        const img = doc.createElement('img') as HTMLImageElement;
+        if (width != null) img.setAttribute('width', width);
+        if (height != null) img.setAttribute('height', height);
+        return img;
       }
-    } as new (width?: number, height?: number) => HTMLImageElement
+    } as new (width?: number, height?: number) => HTMLImageElement;
   }
 
   getComputedStyle(node) {
@@ -53,33 +53,33 @@ export class Window<
       // as inheritable from its parents which is ofc not always true
       // but good enough for svg.js
       getPropertyValue(attr) {
-        let value
-        let cur = node
+        let value;
+        let cur = node;
 
         do {
-          value = cur.style[attr] || cur.getAttribute(attr)
-        } while (value == null && (cur = cur.parentNode) && cur.nodeType === 1)
+          value = cur.style[attr] || cur.getAttribute(attr);
+        } while (value == null && (cur = cur.parentNode) && cur.nodeType === 1);
 
-        return value || defaults[camelCase(attr)] || null
+        return value || defaults[camelCase(attr)] || null;
       }
-    }
+    };
   }
 }
 
-let lastTime = 0
+let lastTime = 0;
 const requestAnimationFrame = callback => {
-  const now = new globalThis.Date().getTime()
-  const timeToCall = Math.max(0, 16 - (now - lastTime))
+  const now = new globalThis.Date().getTime();
+  const timeToCall = Math.max(0, 16 - (now - lastTime));
   return globalThis.setTimeout(() => {
-    lastTime = now + timeToCall
-    callback(lastTime)
-  }, timeToCall)
-}
+    lastTime = now + timeToCall;
+    callback(lastTime);
+  }, timeToCall);
+};
 
-const nowOffset = globalThis.Date.now()
+const nowOffset = globalThis.Date.now();
 const performance = {
   now: () => Date.now() - nowOffset
-}
+};
 
 const winProps = {
   Window,
@@ -114,13 +114,13 @@ const winProps = {
   requestAnimationFrame,
   cancelAnimationFrame: globalThis.clearTimeout,
   performance
-}
+};
 
-extend(Window, winProps)
+extend(Window, winProps);
 
-type WindowProperties = typeof winProps
+type WindowProperties = typeof winProps;
 export interface Window<
   Namespace extends string | null = string | null
 > extends WindowProperties {
-  document: Document<Namespace>
+  document: Document<Namespace>;
 }

@@ -1,6 +1,6 @@
-import type { Element } from '../Element.js'
-import { NodeIterator } from '../../utils/NodeIterator.js'
-import { NodeFilter } from '../NodeFilter.js'
+import type { Element } from '../Element.js';
+import { NodeIterator } from '../../utils/NodeIterator.js';
+import { NodeFilter } from '../NodeFilter.js';
 
 // https://dom.spec.whatwg.org/#interface-nonelementparentnode
 export const NonElementParentNode = {
@@ -11,10 +11,10 @@ export const NonElementParentNode = {
       node =>
         id === node.id ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_IGNORE,
       false
-    )
+    );
     for (const node of iter) {
-      return node
+      return node;
     }
-    return null
+    return null;
   }
-}
+};

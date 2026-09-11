@@ -2,34 +2,34 @@
 // Use declare fields for installed properties so emitted class fields do not
 // shadow their prototype accessors.
 export const extend = (...modules) => {
-  var methods, key, i
+  var methods, key, i;
 
   // Get object with extensions
-  methods = modules.pop()
+  methods = modules.pop();
 
   for (i = modules.length - 1; i >= 0; i--) {
     for (key in methods) {
-      modules[i].prototype[key] = methods[key]
+      modules[i].prototype[key] = methods[key];
     }
   }
-}
+};
 
 export const extendStatic = (...modules) => {
-  var methods, key, i
+  var methods, key, i;
 
   // Get object with extensions
-  methods = modules.pop()
+  methods = modules.pop();
 
   for (i = modules.length - 1; i >= 0; i--) {
     for (key in methods) {
-      modules[i][key] = methods[key]
+      modules[i][key] = methods[key];
     }
   }
-}
+};
 
 // TODO: refactor so that it takes a class
 export const mixin = (mixin, _class) => {
-  const descriptors = Object.getOwnPropertyDescriptors(mixin)
+  const descriptors = Object.getOwnPropertyDescriptors(mixin);
 
-  Object.defineProperties(_class.prototype, descriptors)
-}
+  Object.defineProperties(_class.prototype, descriptors);
+};

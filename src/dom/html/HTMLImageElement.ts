@@ -1,59 +1,59 @@
-import { imageSizeFromFile } from '@carboneio/image-size/fromFile'
-import { Event } from '../Event.js'
-import { HTMLElement } from './HTMLElement.js'
+import { imageSizeFromFile } from '@carboneio/image-size/fromFile';
+import { Event } from '../Event.js';
+import { HTMLElement } from './HTMLElement.js';
 
 export class HTMLImageElement extends HTMLElement {
-  declare naturalWidth: number
-  declare naturalHeight: number
-  declare complete: boolean
+  declare naturalWidth: number;
+  declare naturalHeight: number;
+  declare complete: boolean;
 
   constructor(...args: ConstructorParameters<typeof HTMLElement>) {
-    super(...args)
-    this.naturalWidth = 0
-    this.naturalHeight = 0
-    this.complete = false
+    super(...args);
+    this.naturalWidth = 0;
+    this.naturalHeight = 0;
+    this.complete = false;
   }
 }
 
 Object.defineProperties(HTMLImageElement.prototype, {
   src: {
     get() {
-      return this.getAttribute('src')
+      return this.getAttribute('src');
     },
     set(val) {
-      this.setAttribute('src', val)
+      this.setAttribute('src', val);
       imageSizeFromFile(val)
         .then(size => {
-          this.naturalWidth = size.width
-          this.naturalHeight = size.height
-          this.complete = true
-          this.dispatchEvent(new Event('load'))
+          this.naturalWidth = size.width;
+          this.naturalHeight = size.height;
+          this.complete = true;
+          this.dispatchEvent(new Event('load'));
         })
         .catch(() => {
-          this.dispatchEvent(new Event('error'))
-        })
+          this.dispatchEvent(new Event('error'));
+        });
     }
   },
   height: {
     get() {
-      return this.getAttribute('height') || this.naturalHeight
+      return this.getAttribute('height') || this.naturalHeight;
     },
     set(val) {
-      this.setAttribute('height', val)
+      this.setAttribute('height', val);
     }
   },
   width: {
     get() {
-      return this.getAttribute('width') || this.naturalWidth
+      return this.getAttribute('width') || this.naturalWidth;
     },
     set(val) {
-      this.setAttribute('width', val)
+      this.setAttribute('width', val);
     }
   }
-})
+});
 
 export interface HTMLImageElement {
-  src: string | null
-  height: string | number
-  width: string | number
+  src: string | null;
+  height: string | number;
+  width: string | number;
 }

@@ -1,26 +1,26 @@
-import { HTMLElement } from './HTMLElement.js'
+import { HTMLElement } from './HTMLElement.js';
 export class HTMLScriptElement extends HTMLElement {}
 
 Object.defineProperties(HTMLScriptElement.prototype, {
   src: {
     get() {
-      return this.getAttribute('src')
+      return this.getAttribute('src');
     },
     set(val) {
-      this.setAttribute('src', val)
+      this.setAttribute('src', val);
     }
   },
   type: {
     get() {
-      return this.getAttribute('type')
+      return this.getAttribute('type');
     },
     set(val) {
-      this.setAttribute('type', val)
+      this.setAttribute('type', val);
     }
   }
-})
+});
 
 export interface HTMLScriptElement {
-  src: string | null
-  type: string | null
+  src: string | null;
+  type: string | null;
 }

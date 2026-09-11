@@ -1,10 +1,10 @@
-import { SVGAnimatedLength } from './SVGAnimatedLength.js'
-import { SVGGraphicsElement } from './SVGGraphicsElement.js'
+import { SVGAnimatedLength } from './SVGAnimatedLength.js';
+import { SVGGraphicsElement } from './SVGGraphicsElement.js';
 
 export class SVGTextContentElement extends SVGGraphicsElement {
-  textWidth = new SVGAnimatedLength(this, 'textWidth')
+  textWidth = new SVGAnimatedLength(this, 'textWidth');
 
   getComputedTextLength() {
-    return this.getBBox().width
+    return this.getBBox().width;
   }
 }

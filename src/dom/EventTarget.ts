@@ -1,47 +1,47 @@
-import type { Event } from './Event.js'
+import type { Event } from './Event.js';
 
-export type EventListener = (event: Event) => void
+export type EventListener = (event: Event) => void;
 
-const $ = Symbol('private properties')
+const $ = Symbol('private properties');
 
 export class EventTarget {
-  declare private [$]: { listeners: Record<string, EventListener[]> }
+  declare private [$]: { listeners: Record<string, EventListener[]> };
   constructor() {
-    this[$] = { listeners: {} }
+    this[$] = { listeners: {} };
   }
 
   addEventListener(type: string, callback: EventListener) {
     if (!(type in this[$].listeners)) {
-      this[$].listeners[type] = []
+      this[$].listeners[type] = [];
     }
-    this[$].listeners[type].push(callback)
+    this[$].listeners[type].push(callback);
   }
 
   dispatchEvent(event: Event) {
     if (!(event.type in this[$].listeners)) {
-      return true
+      return true;
     }
 
-    var stack = this[$].listeners[event.type]
-    event.target = this
+    var stack = this[$].listeners[event.type];
+    event.target = this;
 
     stack.forEach(function (el) {
-      el(event)
-    })
+      el(event);
+    });
 
-    return !event.defaultPrevented
+    return !event.defaultPrevented;
   }
 
   removeEventListener(type: string, callback: EventListener) {
     if (!(type in this[$].listeners)) {
-      return
+      return;
     }
 
-    var stack = this[$].listeners[type]
+    var stack = this[$].listeners[type];
     for (var i = 0, il = stack.length; i < il; i++) {
       if (stack[i] === callback) {
-        stack.splice(i, 1)
-        return
+        stack.splice(i, 1);
+        return;
       }
     }
   }

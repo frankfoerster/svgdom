@@ -1,11 +1,11 @@
-import { SVGElement } from './SVGElement.js'
-import { getSegments } from '../../utils/bboxUtils.js'
-import * as regex from '../../utils/regex.js'
-import { SVGMatrix } from './SVGMatrix.js'
+import { SVGElement } from './SVGElement.js';
+import { getSegments } from '../../utils/bboxUtils.js';
+import * as regex from '../../utils/regex.js';
+import { SVGMatrix } from './SVGMatrix.js';
 
 // Map matrix array to object
 function arrayToMatrix(a) {
-  return { a: a[0], b: a[1], c: a[2], d: a[3], e: a[4], f: a[5] }
+  return { a: a[0], b: a[1], c: a[2], d: a[3], e: a[4], f: a[5] };
 }
 
 export class SVGGraphicsElement extends SVGElement {
@@ -15,36 +15,36 @@ export class SVGGraphicsElement extends SVGElement {
     if (
       !['marker', 'symbol', 'pattern', 'svg', 'view'].includes(this.nodeName)
     ) {
-      return new SVGMatrix()
+      return new SVGMatrix();
     }
 
     let view = (this.getAttribute('viewBox') || '')
       .split(regex.delimiter)
       .map(parseFloat)
-      .filter(el => !isNaN(el))
-    const width = parseFloat(this.getAttribute('width')) || 0
-    const height = parseFloat(this.getAttribute('height')) || 0
-    const x = parseFloat(this.getAttribute('x')) || 0
-    const y = parseFloat(this.getAttribute('y')) || 0
+      .filter(el => !isNaN(el));
+    const width = parseFloat(this.getAttribute('width')) || 0;
+    const height = parseFloat(this.getAttribute('height')) || 0;
+    const x = parseFloat(this.getAttribute('x')) || 0;
+    const y = parseFloat(this.getAttribute('y')) || 0;
 
     // TODO: If no width and height is given, width and height of the outer svg element is used
     if (!width || !height) {
-      return new SVGMatrix().translate(x, y)
+      return new SVGMatrix().translate(x, y);
     }
 
     if (view.length !== 4) {
-      view = [0, 0, width, height]
+      view = [0, 0, width, height];
     }
 
     // first apply x and y if nested, then viewbox scale, then viewBox move
     return new SVGMatrix()
       .translate(x, y)
       .scale(width / view[2], height / view[3])
-      .translate(-view[0], -view[1])
+      .translate(-view[0], -view[1]);
   }
 
   getBBox() {
-    return getSegments(this).bbox()
+    return getSegments(this).bbox();
   }
 
   // TODO: This method actually exists on all Elements
@@ -59,10 +59,10 @@ export class SVGGraphicsElement extends SVGElement {
     // The boundingClientRect is not affected by its own viewbox
     // So we apply only our own transformations and parents screenCTM
 
-    let m = this.matrixify()
+    let m = this.matrixify();
 
     if (this.parentNode && typeof this.parentNode.getScreenCTM === 'function') {
-      m = this.parentNode.getScreenCTM().multiply(m)
+      m = this.parentNode.getScreenCTM().multiply(m);
     }
 
     // There are a few extra rules regarding rbox and the <svg> element
@@ -71,50 +71,50 @@ export class SVGGraphicsElement extends SVGElement {
     // Rbox is calculated with the width and height of the <svg>
     // This could be also true for symbols so this is a:
     // Todo: ...
-    return getSegments(this, false, true).transform(m).bbox()
+    return getSegments(this, false, true).transform(m).bbox();
   }
 
   getCTM() {
-    let m = this.matrixify()
+    let m = this.matrixify();
 
-    let node = this
+    let node = this;
     while ((node = node.parentNode)) {
       if (
         ['svg', 'symbol', 'image', 'pattern', 'marker'].indexOf(node.nodeName) >
         -1
       )
-        break
-      m = m.multiply(node.matrixify())
-      if (node.nodeName === '#document') return this.getScreenCTM()
+        break;
+      m = m.multiply(node.matrixify());
+      if (node.nodeName === '#document') return this.getScreenCTM();
     }
 
-    return node.generateViewBoxMatrix().multiply(m)
+    return node.generateViewBoxMatrix().multiply(m);
   }
 
   getInnerMatrix() {
-    let m = this.matrixify()
+    let m = this.matrixify();
 
     if (
       ['svg', 'symbol', 'image', 'pattern', 'marker'].indexOf(this.nodeName) >
       -1
     ) {
-      m = this.generateViewBoxMatrix().multiply(m)
+      m = this.generateViewBoxMatrix().multiply(m);
     }
-    return m
+    return m;
   }
 
   getScreenCTM() {
     // ref: https://bugzilla.mozilla.org/show_bug.cgi?id=1344537
     // We follow Chromes behavior and include the viewbox in the screenCTM
-    const m = this.getInnerMatrix()
+    const m = this.getInnerMatrix();
 
     // TODO: We have to loop until document, however html elements dont have getScreenCTM implemented
     // they also dont have a transform attribute. Therefore we need a different way of figuring out their (css) transform
     if (this.parentNode && this.parentNode instanceof SVGGraphicsElement) {
-      return this.parentNode.getScreenCTM().multiply(m)
+      return this.parentNode.getScreenCTM().multiply(m);
     }
 
-    return m
+    return m;
   }
 
   matrixify() {
@@ -125,25 +125,25 @@ export class SVGGraphicsElement extends SVGElement {
       .slice(0, -1)
       .map(function (str): [string, number[]] {
         // generate key => value pairs
-        const kv = str.trim().split('(')
+        const kv = str.trim().split('(');
         return [
           kv[0].trim(),
           kv[1].split(regex.delimiter).map(function (str) {
-            return parseFloat(str.trim())
+            return parseFloat(str.trim());
           })
-        ]
+        ];
       })
       // merge every transformation into one matrix
       .reduce(function (matrix, transform) {
         if (transform[0] === 'matrix')
-          return matrix.multiply(arrayToMatrix(transform[1]))
-        return matrix[transform[0]].apply(matrix, transform[1])
-      }, new SVGMatrix())
+          return matrix.multiply(arrayToMatrix(transform[1]));
+        return matrix[transform[0]].apply(matrix, transform[1]);
+      }, new SVGMatrix());
 
-    return matrix
+    return matrix;
   }
 
   get transform() {
-    throw new Error('Not implemented')
+    throw new Error('Not implemented');
   }
 }

@@ -1,35 +1,35 @@
-import { describe, it } from 'vitest'
-import assert from 'node:assert/strict'
-import { createSVGDocument } from '../src/index.js'
+import { describe, it } from 'vitest';
+import assert from 'node:assert/strict';
+import { createSVGDocument } from '../src/index.js';
 
 describe('DOM interface composition', () => {
   it('exposes selector methods only on their intended interfaces', () => {
-    const document = createSVGDocument()
-    const fragment = document.createDocumentFragment()
-    const element = document.createElement('g')
+    const document = createSVGDocument();
+    const fragment = document.createDocumentFragment();
+    const element = document.createElement('g');
 
     for (const parent of [document, fragment]) {
-      assert.equal(Reflect.get(parent, 'closest'), undefined)
-      assert.equal(Reflect.get(parent, 'matches'), undefined)
-      assert.equal(Reflect.get(parent, 'matchWithScope'), undefined)
-      assert.equal(Reflect.get(parent, 'query'), undefined)
-      assert.equal(typeof parent.querySelector, 'function')
-      assert.equal(typeof parent.querySelectorAll, 'function')
+      assert.equal(Reflect.get(parent, 'closest'), undefined);
+      assert.equal(Reflect.get(parent, 'matches'), undefined);
+      assert.equal(Reflect.get(parent, 'matchWithScope'), undefined);
+      assert.equal(Reflect.get(parent, 'query'), undefined);
+      assert.equal(typeof parent.querySelector, 'function');
+      assert.equal(typeof parent.querySelectorAll, 'function');
     }
 
-    assert.equal(typeof element.matches, 'function')
-    assert.equal(typeof element.closest, 'function')
-    assert.equal(Reflect.get(element, 'matchWithScope'), undefined)
-    assert.equal(Reflect.get(element, 'query'), undefined)
-  })
+    assert.equal(typeof element.matches, 'function');
+    assert.equal(typeof element.closest, 'function');
+    assert.equal(Reflect.get(element, 'matchWithScope'), undefined);
+    assert.equal(Reflect.get(element, 'query'), undefined);
+  });
 
   it('preserves scoped query and closest behavior', () => {
-    const document = createSVGDocument()
-    document.documentElement.innerHTML = '<g><rect id="target"/></g>'
-    const rect = document.querySelector('#target')
+    const document = createSVGDocument();
+    document.documentElement.innerHTML = '<g><rect id="target"/></g>';
+    const rect = document.querySelector('#target');
 
-    assert.equal(document.querySelectorAll('g > rect')[0], rect)
-    assert.equal(rect.closest('svg'), document.documentElement)
-    assert.equal(rect.matches('#target:scope'), true)
-  })
-})
+    assert.equal(document.querySelectorAll('g > rect')[0], rect);
+    assert.equal(rect.closest('svg'), document.documentElement);
+    assert.equal(rect.matches('#target:scope'), true);
+  });
+});

@@ -1,35 +1,35 @@
-import { describe, it, beforeEach } from 'vitest'
+import { describe, it, beforeEach } from 'vitest';
 // @ts-check
 
-import assert from 'assert'
-import { SVGLength } from '../src/dom/svg/SVGLength.js'
-import { createSVGDocument } from '../src/index.js'
+import assert from 'assert';
+import { SVGLength } from '../src/dom/svg/SVGLength.js';
+import { createSVGDocument } from '../src/index.js';
 
 describe('SVGRectElement', function () {
   /** @type {SVGRectElement} */
-  let rect
+  let rect;
   /** @type {Element} */
-  let svgElement
+  let svgElement;
 
   beforeEach(function () {
-    const svgDoc = createSVGDocument()
-    svgElement = svgDoc.documentElement
-    svgElement.innerHTML = '<rect width="10" height="1in"/>'
-    rect = svgElement.children[0]
-  })
+    const svgDoc = createSVGDocument();
+    svgElement = svgDoc.documentElement;
+    svgElement.innerHTML = '<rect width="10" height="1in"/>';
+    rect = svgElement.children[0];
+  });
 
   it('has animatedLength properties', function () {
-    assert.strictEqual(rect.width.baseVal.value, 10, 'width value')
+    assert.strictEqual(rect.width.baseVal.value, 10, 'width value');
     assert.strictEqual(
       rect.width.baseVal.unitType,
       SVGLength.SVG_LENGTHTYPE_NUMBER,
       'width unit'
-    )
-    assert.strictEqual(rect.height.baseVal.value, 96, 'height value')
+    );
+    assert.strictEqual(rect.height.baseVal.value, 96, 'height value');
     assert.strictEqual(
       rect.height.baseVal.unitType,
       SVGLength.SVG_LENGTHTYPE_IN,
       'height unit'
-    )
-  })
-})
+    );
+  });
+});

@@ -1,146 +1,146 @@
-import { decamelize } from './strUtils.js'
+import { decamelize } from './strUtils.js';
 
 const scan = (value, callback) => {
-  let quote = ''
-  let parentheses = 0
-  let brackets = 0
-  let braces = 0
+  let quote = '';
+  let parentheses = 0;
+  let brackets = 0;
+  let braces = 0;
 
   for (let i = 0; i < value.length; i++) {
-    const character = value[i]
+    const character = value[i];
 
     if (character === '\\') {
-      i++
-      continue
+      i++;
+      continue;
     }
 
     if (quote) {
-      if (character === quote) quote = ''
-      continue
+      if (character === quote) quote = '';
+      continue;
     }
 
     if (character === '"' || character === "'") {
-      quote = character
-      continue
+      quote = character;
+      continue;
     }
 
     if (character === '/' && value[i + 1] === '*') {
-      const commentEnd = value.indexOf('*/', i + 2)
-      i = commentEnd === -1 ? value.length : commentEnd + 1
-      continue
+      const commentEnd = value.indexOf('*/', i + 2);
+      i = commentEnd === -1 ? value.length : commentEnd + 1;
+      continue;
     }
 
-    if (character === '(') parentheses++
-    else if (character === ')' && parentheses) parentheses--
-    else if (character === '[') brackets++
-    else if (character === ']' && brackets) brackets--
-    else if (character === '{') braces++
-    else if (character === '}' && braces) braces--
+    if (character === '(') parentheses++;
+    else if (character === ')' && parentheses) parentheses--;
+    else if (character === '[') brackets++;
+    else if (character === ']' && brackets) brackets--;
+    else if (character === '{') braces++;
+    else if (character === '}' && braces) braces--;
     else if (
       !parentheses &&
       !brackets &&
       !braces &&
       callback(character, i) === false
     )
-      return
+      return;
   }
-}
+};
 
 const splitDeclarations = cssText => {
-  const declarations = []
-  let start = 0
+  const declarations = [];
+  let start = 0;
 
   scan(cssText, (character, index) => {
-    if (character !== ';') return
-    declarations.push(cssText.slice(start, index))
-    start = index + 1
-  })
+    if (character !== ';') return;
+    declarations.push(cssText.slice(start, index));
+    start = index + 1;
+  });
 
-  declarations.push(cssText.slice(start))
-  return declarations
-}
+  declarations.push(cssText.slice(start));
+  return declarations;
+};
 
 const declarationColon = declaration => {
-  let colon = -1
+  let colon = -1;
 
   scan(declaration, (character, index) => {
-    if (character !== ':') return
-    colon = index
-    return false
-  })
+    if (character !== ':') return;
+    colon = index;
+    return false;
+  });
 
-  return colon
-}
+  return colon;
+};
 
 const withoutCommentsAndWhitespace = value =>
-  value.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s/g, '')
+  value.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s/g, '');
 
-const withoutComments = value => value.replace(/\/\*[\s\S]*?\*\//g, '')
+const withoutComments = value => value.replace(/\/\*[\s\S]*?\*\//g, '');
 
 export const splitStylePriority = value => {
-  let importantIndex = -1
+  let importantIndex = -1;
 
   scan(value, (character, index) => {
-    if (character !== '!') return
+    if (character !== '!') return;
 
-    const priority = withoutCommentsAndWhitespace(value.slice(index))
-    if (priority.toLowerCase() === '!important') importantIndex = index
-  })
+    const priority = withoutCommentsAndWhitespace(value.slice(index));
+    if (priority.toLowerCase() === '!important') importantIndex = index;
+  });
 
   if (importantIndex === -1) {
-    return { value: value.trim(), priority: '' }
+    return { value: value.trim(), priority: '' };
   }
 
   return {
     value: value.slice(0, importantIndex).trim(),
     priority: 'important'
-  }
-}
+  };
+};
 
 export const normalizeStylePropertyName = name => {
-  name = String(name).trim()
-  if (name.startsWith('--')) return name
-  if (name === 'cssFloat') return 'float'
-  return decamelize(name).toLowerCase()
-}
+  name = String(name).trim();
+  if (name.startsWith('--')) return name;
+  if (name === 'cssFloat') return 'float';
+  return decamelize(name).toLowerCase();
+};
 
 export const parseStyleDeclarations = cssText => {
-  const parsed = []
+  const parsed = [];
 
   for (const declaration of splitDeclarations(String(cssText))) {
-    const colon = declarationColon(declaration)
-    if (colon === -1) continue
+    const colon = declarationColon(declaration);
+    if (colon === -1) continue;
 
     const name = normalizeStylePropertyName(
       withoutComments(declaration.slice(0, colon))
-    )
-    if (!name) continue
+    );
+    if (!name) continue;
 
-    const parsedValue = splitStylePriority(declaration.slice(colon + 1))
-    if (!name.startsWith('--') && !parsedValue.value) continue
+    const parsedValue = splitStylePriority(declaration.slice(colon + 1));
+    if (!name.startsWith('--') && !parsedValue.value) continue;
 
     const existingIndex = parsed.findIndex(
       ({ name: existingName }) => existingName === name
-    )
+    );
     if (existingIndex === -1) {
-      parsed.push({ name, ...parsedValue })
-      continue
+      parsed.push({ name, ...parsedValue });
+      continue;
     }
 
-    const existing = parsed[existingIndex]
+    const existing = parsed[existingIndex];
     const winner =
       existing.priority && !parsedValue.priority
         ? existing
-        : { name, ...parsedValue }
+        : { name, ...parsedValue };
 
     // A duplicate declaration is represented once, at the end of the block.
     // An earlier important value still wins over a later non-important value.
-    parsed.splice(existingIndex, 1)
-    parsed.push(winner)
+    parsed.splice(existingIndex, 1);
+    parsed.push(winner);
   }
 
-  return parsed
-}
+  return parsed;
+};
 
 export const serializeStyleDeclarations = declarations =>
   declarations
@@ -148,4 +148,4 @@ export const serializeStyleDeclarations = declarations =>
       ({ name, value, priority }) =>
         `${name}: ${value}${priority ? ' !important' : ''};`
     )
-    .join(' ')
+    .join(' ');

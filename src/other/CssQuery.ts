@@ -1,12 +1,12 @@
-import * as regex from '../utils/regex.js'
-import { html } from '../utils/namespaces.js'
+import * as regex from '../utils/regex.js';
+import { html } from '../utils/namespaces.js';
 import {
   InvalidSelectorError,
   parseCompoundSelector,
   parseSelector
-} from './css/selectorParser.js'
+} from './css/selectorParser.js';
 
-type CompiledQuery = [string, CssQueryNode][][]
+type CompiledQuery = [string, CssQueryNode][][];
 
 // Compile once so invalid selectors fail even for empty search roots and each
 // candidate can reuse the same attribute and pseudo-class matchers.
@@ -16,158 +16,158 @@ const compileQueries = (queries): CompiledQuery =>
       relation,
       new CssQueryNode(compound)
     ])
-  )
+  );
 
 export class CssQuery {
-  declare static cache: Map<string, CompiledQuery>
+  declare static cache: Map<string, CompiledQuery>;
 
-  declare queries: CompiledQuery
+  declare queries: CompiledQuery;
 
   constructor(query: string) {
     if (CssQuery.cache.has(query)) {
-      this.queries = CssQuery.cache.get(query)
-      CssQuery.cache.delete(query)
-      CssQuery.cache.set(query, this.queries)
-      return
+      this.queries = CssQuery.cache.get(query);
+      CssQuery.cache.delete(query);
+      CssQuery.cache.set(query, this.queries);
+      return;
     }
 
-    const queries = compileQueries(parseSelector(query))
+    const queries = compileQueries(parseSelector(query));
 
-    this.queries = queries
+    this.queries = queries;
 
-    CssQuery.cache.set(query, queries)
+    CssQuery.cache.set(query, queries);
     // Refresh-on-read above makes this a small LRU cache rather than an
     // unbounded selector history retained for the lifetime of the process.
     while (CssQuery.cache.size > 50) {
-      CssQuery.cache.delete(CssQuery.cache.keys().next().value)
+      CssQuery.cache.delete(CssQuery.cache.keys().next().value);
     }
   }
 
   matches(node, scope?: unknown) {
     for (let i = this.queries.length; i--;) {
       if (this.matchHelper(this.queries[i], node, scope)) {
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   }
 
   matchHelper(query, node, scope) {
     // Match right-to-left: verify the candidate compound first, then follow the
     // relation attached to it to find a candidate for the preceding compound.
-    query = query.slice()
-    const last = query.pop()
+    query = query.slice();
+    const last = query.pop();
 
     if (!last[1].matches(node, scope)) {
-      return false
+      return false;
     }
 
-    if (!query.length) return true
+    if (!query.length) return true;
 
-    if (last[0] === ',') return true
+    if (last[0] === ',') return true;
 
     if (last[0] === '+') {
-      node = node.previousElementSibling
-      return !!node && this.matchHelper(query, node, scope)
+      node = node.previousElementSibling;
+      return !!node && this.matchHelper(query, node, scope);
     }
 
     if (last[0] === '>') {
       return (
         !!node.parentNode && this.matchHelper(query, node.parentNode, scope)
-      )
+      );
     }
 
     if (last[0] === '~') {
       while ((node = node.previousSibling)) {
         if (this.matchHelper(query, node, scope)) {
-          return true
+          return true;
         }
       }
-      return false
+      return false;
     }
 
     if (last[0] === '%') {
       while ((node = node.parentNode)) {
         if (this.matchHelper(query, node, scope)) {
-          return true
+          return true;
         }
       }
-      return false
+      return false;
     }
   }
 }
 
-CssQuery.cache = new Map()
+CssQuery.cache = new Map();
 
 const parseNth = value => {
-  value = value.toLowerCase().replace(/[ \n\r\t\f]/g, '')
+  value = value.toLowerCase().replace(/[ \n\r\t\f]/g, '');
 
-  if (value === 'even') return { a: 2, b: 0 }
-  if (value === 'odd') return { a: 2, b: 1 }
+  if (value === 'even') return { a: 2, b: 0 };
+  if (value === 'odd') return { a: 2, b: 1 };
 
   if (/^[+-]?\d+$/.test(value)) {
-    return { a: 0, b: parseInt(value, 10) }
+    return { a: 0, b: parseInt(value, 10) };
   }
 
-  const formula = value.match(/^([+-]?\d*)n(?:([+-]\d+))?$/)
-  if (!formula) return null
+  const formula = value.match(/^([+-]?\d*)n(?:([+-]\d+))?$/);
+  if (!formula) return null;
 
-  let a = formula[1]
-  if (a === '' || a === '+') a = 1
-  else if (a === '-') a = -1
-  else a = parseInt(a, 10)
+  let a = formula[1];
+  if (a === '' || a === '+') a = 1;
+  else if (a === '-') a = -1;
+  else a = parseInt(a, 10);
 
-  return { a, b: parseInt(formula[2] || '0', 10) }
-}
+  return { a, b: parseInt(formula[2] || '0', 10) };
+};
 
 // Check if node is the An+B-th item in arr for a non-negative integer n.
 const nth = (node, arr, value) => {
-  const formula = parseNth(value)
-  const index = arr.indexOf(node) + 1
-  if (!formula || !index) return false
+  const formula = parseNth(value);
+  const index = arr.indexOf(node) + 1;
+  if (!formula || !index) return false;
 
-  if (formula.a === 0) return index === formula.b
+  if (formula.a === 0) return index === formula.b;
 
-  const n = (index - formula.b) / formula.a
-  return Number.isInteger(n) && n >= 0
-}
+  const n = (index - formula.b) / formula.a;
+  return Number.isInteger(n) && n >= 0;
+};
 
 const elementChildren = node =>
-  node ? node.childNodes.filter(child => child.nodeType === 1) : []
+  node ? node.childNodes.filter(child => child.nodeType === 1) : [];
 
 const elementSiblings = node =>
-  node.parentNode ? elementChildren(node.parentNode) : [node]
+  node.parentNode ? elementChildren(node.parentNode) : [node];
 
 const sameType = (a, b) =>
-  a.localName === b.localName && a.namespaceURI === b.namespaceURI
+  a.localName === b.localName && a.namespaceURI === b.namespaceURI;
 
 const siblingsOfType = node =>
-  elementSiblings(node).filter(sibling => sameType(sibling, node))
+  elementSiblings(node).filter(sibling => sameType(sibling, node));
 
 const parseNthArgument = value => {
-  const match = value.match(/^([\s\S]*?)[ \n\r\t\f]+of[ \n\r\t\f]+([\s\S]+)$/i)
+  const match = value.match(/^([\s\S]*?)[ \n\r\t\f]+of[ \n\r\t\f]+([\s\S]+)$/i);
   return match
     ? { value: match[1], selector: match[2] }
-    : { value, selector: null }
-}
+    : { value, selector: null };
+};
 
 const nthChild = (argument, node, scope, fromEnd = false) => {
-  const parsed = parseNthArgument(argument)
-  let siblings = elementSiblings(node)
+  const parsed = parseNthArgument(argument);
+  let siblings = elementSiblings(node);
 
   if (parsed.selector) {
-    const query = new CssQuery(parsed.selector)
-    siblings = siblings.filter(sibling => query.matches(sibling, scope))
+    const query = new CssQuery(parsed.selector);
+    siblings = siblings.filter(sibling => query.matches(sibling, scope));
   }
 
-  if (fromEnd) siblings.reverse()
-  return nth(node, siblings, parsed.value)
-}
+  if (fromEnd) siblings.reverse();
+  return nth(node, siblings, parsed.value);
+};
 
-const lower = a => a.toLowerCase()
+const lower = a => a.toLowerCase();
 
 // checks if a and b are equal. Is insensitive when i is true
-const eq = (a, b, i) => (i ? lower(a) === lower(b) : a === b)
+const eq = (a, b, i) => (i ? lower(a) === lower(b) : a === b);
 
 // [i] (prebound) is true if insensitive matching is required
 // [a] (prebound) is the value the attr is compared to
@@ -181,7 +181,7 @@ const attributeMatcher = {
   '$=': (i, a, b) => (i ? lower(b).endsWith(lower(a)) : b.endsWith(a)),
   '*=': (i, a, b) => (i ? lower(b).includes(lower(a)) : b.includes(a)),
   '*': (i, a, b) => b != null
-}
+};
 
 const getAttributeValues = (prefix, name, node) => {
   if (prefix === '*') {
@@ -189,63 +189,65 @@ const getAttributeValues = (prefix, name, node) => {
     // name; the caller succeeds when any of their values matches.
     return [...node.attrs]
       .filter(attr => attr.localName === name)
-      .map(attr => attr.value)
+      .map(attr => attr.value);
   }
   const attr = prefix
     ? node.getAttributeNode(prefix + ':' + name)
-    : node.getAttributeNodeNS(null, name)
-  return attr ? [attr.value] : []
-}
+    : node.getAttributeNodeNS(null, name);
+  return attr ? [attr.value] : [];
+};
 
 const isEmpty = node =>
   !node.childNodes.some(child => {
-    if (child.nodeType === 1) return true
-    if (child.nodeType !== 3 && child.nodeType !== 4) return false
-    return /[^ \n\r\t\f]/.test(child.data || '')
-  })
+    if (child.nodeType === 1) return true;
+    if (child.nodeType !== 3 && child.nodeType !== 4) return false;
+    return /[^ \n\r\t\f]/.test(child.data || '');
+  });
 
 const matchesRelativeSelector = (selector, node) => {
-  let queries
+  let queries;
   try {
-    queries = parseSelector(selector, { relative: true })
+    queries = parseSelector(selector, { relative: true });
   } catch (error) {
-    if (!(error instanceof InvalidSelectorError)) throw error
-    return false
+    if (!(error instanceof InvalidSelectorError)) throw error;
+    return false;
   }
 
-  const query = Object.create(CssQuery.prototype)
-  const scope = parseCompoundSelector(':scope')
+  const query = Object.create(CssQuery.prototype);
+  const scope = parseCompoundSelector(':scope');
   // Prefixing :scope anchors leading combinators. Matching remains right-to-left,
   // so scan possible subjects from the root and retain the original node as scope.
-  query.queries = compileQueries(queries.map(pairs => [['%', scope], ...pairs]))
+  query.queries = compileQueries(
+    queries.map(pairs => [['%', scope], ...pairs])
+  );
 
-  const nodes = [node.getRootNode()]
+  const nodes = [node.getRootNode()];
   while (nodes.length) {
-    const candidate = nodes.pop()
-    if (candidate.nodeType === 1 && query.matches(candidate, node)) return true
-    nodes.push(...candidate.childNodes)
+    const candidate = nodes.pop();
+    if (candidate.nodeType === 1 && query.matches(candidate, node)) return true;
+    nodes.push(...candidate.childNodes);
   }
 
-  return false
-}
+  return false;
+};
 
 const matchesForgivingSelectorList = (selector, node, scope) => {
-  let matches = false
+  let matches = false;
 
   for (const pairs of parseSelector(selector, { forgiving: true })) {
     try {
       // Forgiving lists discard branches that parse but fail during matcher
       // compilation, such as branches containing unsupported pseudo-classes.
-      const query = Object.create(CssQuery.prototype)
-      query.queries = compileQueries([pairs])
-      if (query.matches(node, scope)) matches = true
+      const query = Object.create(CssQuery.prototype);
+      query.queries = compileQueries([pairs]);
+      if (query.matches(node, scope)) matches = true;
     } catch (error) {
-      if (!(error instanceof InvalidSelectorError)) throw error
+      if (!(error instanceof InvalidSelectorError)) throw error;
     }
   }
 
-  return matches
-}
+  return matches;
+};
 
 // [a] (prebound) [a]rgument of the pseudo selector
 // [n] (passed)   [n]ode
@@ -260,12 +262,12 @@ const pseudoMatcher = {
   'nth-of-type': (a, n) => nth(n, siblingsOfType(n), a),
   'nth-last-of-type': (a, n) => nth(n, siblingsOfType(n).reverse(), a),
   'only-child': (a, n) => {
-    const siblings = elementSiblings(n)
-    return siblings.length === 1 && siblings[0] === n
+    const siblings = elementSiblings(n);
+    return siblings.length === 1 && siblings[0] === n;
   },
   'only-of-type': (a, n) => {
-    const siblings = siblingsOfType(n)
-    return siblings.length === 1 && siblings[0] === n
+    const siblings = siblingsOfType(n);
+    return siblings.length === 1 && siblings[0] === n;
   },
   empty: (a, n) => isEmpty(n),
   root: (a, n) => n.ownerDocument.documentElement === n,
@@ -275,91 +277,92 @@ const pseudoMatcher = {
   has: (a, n) => matchesRelativeSelector(a, n),
   matches: (a, n, s) => new CssQuery(a).matches(n, s),
   scope: (a, n, s) => n === s
-}
+};
 
 export class CssQueryNode {
-  declare tag: any
-  declare id: any
-  declare classList: any
-  declare attrs: { name: any; getValues: any; matcher: any }[]
-  declare pseudo: any[]
+  declare tag: any;
+  declare id: any;
+  declare classList: any;
+  declare attrs: { name: any; getValues: any; matcher: any }[];
+  declare pseudo: any[];
 
   constructor(compound) {
-    if (typeof compound === 'string') compound = parseCompoundSelector(compound)
-    this.tag = compound.tag
-    this.id = compound.id
-    this.classList = compound.classList
-    this.attrs = []
-    this.pseudo = []
+    if (typeof compound === 'string')
+      compound = parseCompoundSelector(compound);
+    this.tag = compound.tag;
+    this.id = compound.id;
+    this.classList = compound.classList;
+    this.attrs = [];
+    this.pseudo = [];
 
     for (const pseudo of compound.pseudos) {
-      const matcher = pseudoMatcher[pseudo.name]
+      const matcher = pseudoMatcher[pseudo.name];
       if (!matcher) {
         throw new InvalidSelectorError(
           `Unsupported pseudo-class :${pseudo.name}`
-        )
+        );
       }
-      this.pseudo.push(matcher.bind(this, pseudo.argument))
+      this.pseudo.push(matcher.bind(this, pseudo.argument));
     }
 
     for (const attr of compound.attrs) {
-      const matcher = attributeMatcher[attr.operator]
+      const matcher = attributeMatcher[attr.operator];
       if (!matcher) {
         throw new InvalidSelectorError(
           `Unsupported attribute operator: ${attr.operator}`
-        )
+        );
       }
       this.attrs.push({
         name: attr.name,
         getValues: getAttributeValues.bind(this, attr.prefix, attr.name),
         matcher: matcher.bind(this, attr.insensitive, attr.value)
-      })
+      });
     }
   }
 
   matches(node, scope) {
-    let i
+    let i;
 
-    if (node.nodeType !== 1) return false
+    if (node.nodeType !== 1) return false;
 
     // HTML type selectors are case-insensitive, but foreign elements in the
     // same document retain their namespace's casing rules.
     const tag =
       node.namespaceURI === html && node.ownerDocument?.namespaceURI === html
         ? this.tag.toUpperCase()
-        : this.tag
+        : this.tag;
 
     if (tag && tag !== node.nodeName && tag !== '*') {
-      return false
+      return false;
     }
 
     if (this.id && this.id !== node.id) {
-      return false
+      return false;
     }
 
     const classList = (node.getAttribute('class') || '')
       .split(regex.delimiter)
-      .filter(el => !!el.length)
+      .filter(el => !!el.length);
     if (
       this.classList.filter(className => classList.indexOf(className) < 0)
         .length
     ) {
-      return false
+      return false;
     }
 
     for (i = this.attrs.length; i--;) {
-      const attrValues = this.attrs[i].getValues(node)
+      const attrValues = this.attrs[i].getValues(node);
       if (!attrValues.some(this.attrs[i].matcher)) {
-        return false
+        return false;
       }
     }
 
     for (i = this.pseudo.length; i--;) {
       if (!this.pseudo[i](node, scope)) {
-        return false
+        return false;
       }
     }
 
-    return true
+    return true;
   }
 }

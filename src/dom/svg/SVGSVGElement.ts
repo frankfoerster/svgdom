@@ -1,18 +1,18 @@
-import { SVGGraphicsElement } from './SVGGraphicsElement.js'
-import { Box } from '../../other/Box.js'
-import { SVGMatrix } from './SVGMatrix.js'
-import { SVGPoint } from './SVGPoint.js'
+import { SVGGraphicsElement } from './SVGGraphicsElement.js';
+import { Box } from '../../other/Box.js';
+import { SVGMatrix } from './SVGMatrix.js';
+import { SVGPoint } from './SVGPoint.js';
 
 export class SVGSVGElement extends SVGGraphicsElement {
   createSVGMatrix() {
-    return new SVGMatrix()
+    return new SVGMatrix();
   }
 
   createSVGPoint() {
-    return new SVGPoint()
+    return new SVGPoint();
   }
 
   createSVGRect() {
-    return new Box()
+    return new Box();
   }
 }
