@@ -10,15 +10,15 @@
     "xml",
     "xmldom"
   ],
-  "homepage": "https://github.com/svgdotjs/svgdom#readme",
+  "homepage": "https://github.com/frankfoerster/svgdom#readme",
   "bugs": {
-    "url": "https://github.com/svgdotjs/svgdom/issues"
+    "url": "https://github.com/frankfoerster/svgdom/issues"
   },
   "license": "MIT",
   "author": "Ulrich-Matthias Schäfer",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/svgdotjs/svgdom.git"
+    "url": "git+https://github.com/frankfoerster/svgdom.git"
   },
   "funding": {
     "type": "github",
