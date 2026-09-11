@@ -3,7 +3,20 @@ import { mixin } from '../utils/objectCreationUtils.js'
 import { ChildNode } from './mixins/ChildNode.js'
 
 export class DocumentType extends Node {
-  constructor(name, props = {}) {
+  declare nodeType: number
+  declare name: string
+  declare publicId: string
+  declare systemId: string
+  declare internalSubset: string | null
+
+  constructor(
+    name,
+    props: import('./Node.js').NodeProps & {
+      publicId?: string
+      systemId?: string
+      internalSubset?: string
+    } = {}
+  ) {
     super(name, props)
 
     this.nodeType = Node.DOCUMENT_TYPE_NODE
@@ -17,3 +30,6 @@ export class DocumentType extends Node {
 }
 
 mixin(ChildNode, DocumentType)
+
+type ChildNodeInterface = typeof ChildNode
+export interface DocumentType extends ChildNodeInterface {}

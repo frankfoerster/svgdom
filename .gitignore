@@ -9,3 +9,5 @@ spec/
 /index.cjs
 .reify-cache
 /backlog/
+
+/dist/

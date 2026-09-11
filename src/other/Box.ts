@@ -2,7 +2,16 @@ import * as regex from '../utils/regex.js'
 import { Point } from './Point.js'
 
 export class Box {
-  constructor(source) {
+  declare x: number
+  declare left: number
+  declare y: number
+  declare top: number
+  declare width: number
+  declare height: number
+  declare right: number
+  declare bottom: number
+
+  constructor(source?: any, ..._dimensions: number[]) {
     var base = [0, 0, 0, 0]
     source =
       typeof source === 'string'

@@ -1,9 +1,10 @@
+import type { Element } from '../Element.js'
 import { NodeIterator } from '../../utils/NodeIterator.js'
 import { NodeFilter } from '../NodeFilter.js'
 
 // https://dom.spec.whatwg.org/#interface-nonelementparentnode
 export const NonElementParentNode = {
-  getElementById(id) {
+  getElementById(id: string): Element | null {
     const iter = new NodeIterator(
       this,
       NodeFilter.SHOW_ELEMENT,

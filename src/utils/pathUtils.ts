@@ -170,6 +170,8 @@ export const pathParser = array => {
 }
 
 class Move {
+  declare p1: any
+
   constructor(p) {
     this.p1 = p.clone()
   }
@@ -203,9 +205,25 @@ class Move {
 }
 
 export class Arc {
+  declare p1: any
+  declare p2: any
+  declare arc: number
+  declare sweep: number
+  declare c: Point
+  declare theta: number
+  declare theta2: number
+  declare delta: number
+  declare rx: any
+  declare ry: any
+  declare phi: any
+  declare cosφ: number
+  declare sinφ: number
+
   constructor(p1, p2, rx, ry, φ, arc, sweep) {
     // https://www.w3.org/TR/SVG/implnote.html#ArcCorrectionOutOfRangeRadii
-    if (!rx || !ry) return new Line(p1, p2)
+    // Preserve the JavaScript constructor's zero-radius line fallback. Both
+    // segments implement the path operations used by callers.
+    if (!rx || !ry) return new Line(p1, p2) as unknown as Arc
 
     rx = Math.abs(rx)
     ry = Math.abs(ry)
@@ -548,6 +566,12 @@ export class Arc {
 }
 
 class Cubic {
+  declare p1: Point
+  declare c1: Point
+  declare c2: Point
+  declare p2: Point
+  declare t_value: any
+
   constructor(p1, c1, c2, p2) {
     if (p1 instanceof Point) {
       this.p1 = new Point(p1)
@@ -758,7 +782,10 @@ class Cubic {
 }
 
 class Line {
-  constructor(x1, y1, x2, y2) {
+  declare p1: Point
+  declare p2: Point
+
+  constructor(x1, y1, x2 = undefined, y2 = undefined) {
     if (x1 instanceof Object) {
       this.p1 = new Point(x1)
       this.p2 = new Point(y1)

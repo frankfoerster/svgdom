@@ -1,8 +1,24 @@
-const radians = function (d) {
+export interface MatrixLike {
+  a: number
+  b: number
+  c: number
+  d: number
+  e: number
+  f: number
+}
+
+const radians = function (d: number) {
   return ((d % 360) * Math.PI) / 180
 }
 
-export function matrixFactory(a, b, c, d, e, f) {
+export function matrixFactory(
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+  e: number,
+  f: number
+) {
   var r = new SVGMatrix()
   r.a = a
   r.b = b
@@ -14,6 +30,13 @@ export function matrixFactory(a, b, c, d, e, f) {
 }
 
 export class SVGMatrix {
+  declare a: number
+  declare d: number
+  declare b: number
+  declare c: number
+  declare e: number
+  declare f: number
+
   constructor() {
     this.a = this.d = 1
     this.b = this.c = this.e = this.f = 0
@@ -53,18 +76,18 @@ export class SVGMatrix {
     return this
   }
 
-  multiply(m) {
+  multiply(m: MatrixLike) {
     var r = new SVGMatrix()
-    r.a = this.a * m.a + this.c * m.b + this.e * 0
-    r.b = this.b * m.a + this.d * m.b + this.f * 0
-    r.c = this.a * m.c + this.c * m.d + this.e * 0
-    r.d = this.b * m.c + this.d * m.d + this.f * 0
-    r.e = this.a * m.e + this.c * m.f + this.e * 1
-    r.f = this.b * m.e + this.d * m.f + this.f * 1
+    r.a = this.a * m.a + this.c * m.b
+    r.b = this.b * m.a + this.d * m.b
+    r.c = this.a * m.c + this.c * m.d
+    r.d = this.b * m.c + this.d * m.d
+    r.e = this.a * m.e + this.c * m.f + this.e
+    r.f = this.b * m.e + this.d * m.f + this.f
     return r
   }
 
-  rotate(r, x = 0, y = 0) {
+  rotate(r: number, x = 0, y = 0) {
     r = ((r % 360) * Math.PI) / 180
     const cos = Math.cos(r)
     const sin = Math.sin(r)
@@ -82,21 +105,21 @@ export class SVGMatrix {
     )
   }
 
-  scale(scaleX, scaleY = scaleX) {
+  scale(scaleX: number, scaleY = scaleX) {
     return this.multiply(matrixFactory(scaleX, 0, 0, scaleY, 0, 0))
   }
 
-  skew(x, y) {
+  skew(x: number, y: number) {
     return this.multiply(
       matrixFactory(1, Math.tan(radians(y)), Math.tan(radians(x)), 1, 0, 0)
     )
   }
 
-  skewX(x) {
+  skewX(x: number) {
     return this.skew(x, 0)
   }
 
-  skewY(y) {
+  skewY(y: number) {
     return this.skew(0, y)
   }
 

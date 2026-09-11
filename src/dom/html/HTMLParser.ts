@@ -130,7 +130,7 @@ const parse = function (str, el) {
     // lowercase: true,
     xmlns: true,
     strictEntities: true
-  })
+  } as sax.SAXOptions & { strictEntities: boolean })
 
   parser.onerror = e => {
     throw e
@@ -157,7 +157,7 @@ const parse = function (str, el) {
   }
   parser.oncomment = str => appendNode(document.createComment(str))
 
-  parser.onopentag = node => {
+  parser.onopentag = (node: sax.QualifiedTag) => {
     // Only the first SAX element is synthetic. A user element with the same
     // qualified name at a deeper level is ordinary fragment content.
     const isWrapper = wrapperName !== null && depth === 0

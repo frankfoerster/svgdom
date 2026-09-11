@@ -1,15 +1,6 @@
 {
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
-  "editor.insertSpaces": true,
-  "editor.renderControlCharacters": true,
-  "editor.renderWhitespace": "all",
   "editor.tabSize": 2,
-  "eslint.enable": true,
-  "eslint.validate": ["javascript"],
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "files.encoding": "utf8",
-    "files.eol": "\n"
-  }
+  "files.eol": "\n"
 }

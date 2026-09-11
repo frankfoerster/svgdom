@@ -1,6 +1,14 @@
 import { Node } from './Node.js'
 export class Attr extends Node {
-  constructor(name, props, ns) {
+  declare nodeType: number
+  declare ownerElement: import('./Element.js').Element | null
+  declare _nodeValue: string
+
+  constructor(
+    name: string,
+    props: import('./Node.js').NodeProps = {},
+    ns: string | null = null
+  ) {
     super(name, { nodeValue: '', ...props }, ns)
 
     // createAttribute() performs HTML lowercasing before construction;
@@ -10,19 +18,19 @@ export class Attr extends Node {
     this.ownerElement = null
   }
 
-  get nodeValue() {
+  get nodeValue(): string {
     return this._nodeValue
   }
 
-  set nodeValue(val) {
+  set nodeValue(val: unknown) {
     this._nodeValue = String(val)
   }
 
-  get value() {
+  get value(): string {
     return this.nodeValue
   }
 
-  set value(val) {
+  set value(val: unknown) {
     this.nodeValue = val
   }
 

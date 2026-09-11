@@ -1,5 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'assert'
-import { createSVGWindow } from '../main-module.js'
+import { createSVGWindow } from '../src/index.js'
 import { SVG, registerWindow } from '@svgdotjs/svg.js'
 
 // https://github.com/svgdotjs/svgdom/issues/141

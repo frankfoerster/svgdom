@@ -1,11 +1,12 @@
+import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
-import { createHTMLDocument, createSVGDocument } from '../main-module.js'
+import { createHTMLDocument, createSVGDocument } from '../src/index.js'
 
 describe('getElementsByClassName', () => {
   for (const [name, createDocument] of [
     ['SVG', createSVGDocument],
     ['HTML', createHTMLDocument]
-  ]) {
+  ] as const) {
     it(`handles unclassed and multiply-classed ${name} elements`, () => {
       const document = createDocument()
       const parent = document.createElement('div')

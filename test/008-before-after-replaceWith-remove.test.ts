@@ -1,15 +1,15 @@
+import { describe, it, beforeEach } from 'vitest'
 // @ts-check
 
 import assert from 'assert'
-import { createSVGDocument } from '../main-module.js'
+import { createSVGDocument } from '../src/index.js'
 import { svg } from '../src/utils/namespaces.js'
-import { describe, it } from 'mocha'
 
 describe('before', function () {
   /** @type {Element} */
   let svgElement, rect
 
-  this.beforeEach(function () {
+  beforeEach(function () {
     const svgDoc = createSVGDocument()
     svgElement = svgDoc.documentElement
     svgElement.innerHTML = '<rect width="10" height="1in"/>'
@@ -40,7 +40,7 @@ describe('after', function () {
   /** @type {Element} */
   let svgElement, rect
 
-  this.beforeEach(function () {
+  beforeEach(function () {
     const svgDoc = createSVGDocument()
     svgElement = svgDoc.documentElement
     svgElement.innerHTML = '<rect width="10" height="1in"/>'
@@ -70,7 +70,7 @@ describe('replaceWith', function () {
   /** @type {Element} */
   let svgElement, rect
 
-  this.beforeEach(function () {
+  beforeEach(function () {
     const svgDoc = createSVGDocument()
     svgElement = svgDoc.documentElement
     svgElement.innerHTML = '<rect width="10" height="1in"/>'
@@ -100,7 +100,7 @@ describe('remove', function () {
   /** @type {Element} */
   let svgElement, rect
 
-  this.beforeEach(function () {
+  beforeEach(function () {
     const svgDoc = createSVGDocument()
     svgElement = svgDoc.documentElement
     svgElement.innerHTML = '<rect width="10" height="1in"/>'

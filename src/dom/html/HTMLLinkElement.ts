@@ -28,3 +28,9 @@ Object.defineProperties(HTMLLinkElement.prototype, {
     }
   }
 })
+
+export interface HTMLLinkElement {
+  href: string | null
+  rel: string | null
+  type: string | null
+}

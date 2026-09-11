@@ -6,15 +6,24 @@ import {
   parseSelector
 } from './css/selectorParser.js'
 
+type CompiledQuery = [string, CssQueryNode][][]
+
 // Compile once so invalid selectors fail even for empty search roots and each
 // candidate can reuse the same attribute and pseudo-class matchers.
-const compileQueries = queries =>
+const compileQueries = (queries): CompiledQuery =>
   queries.map(pairs =>
-    pairs.map(([relation, compound]) => [relation, new CssQueryNode(compound)])
+    pairs.map(([relation, compound]): [string, CssQueryNode] => [
+      relation,
+      new CssQueryNode(compound)
+    ])
   )
 
 export class CssQuery {
-  constructor(query) {
+  declare static cache: Map<string, CompiledQuery>
+
+  declare queries: CompiledQuery
+
+  constructor(query: string) {
     if (CssQuery.cache.has(query)) {
       this.queries = CssQuery.cache.get(query)
       CssQuery.cache.delete(query)
@@ -34,7 +43,7 @@ export class CssQuery {
     }
   }
 
-  matches(node, scope) {
+  matches(node, scope?: unknown) {
     for (let i = this.queries.length; i--;) {
       if (this.matchHelper(this.queries[i], node, scope)) {
         return true
@@ -269,6 +278,12 @@ const pseudoMatcher = {
 }
 
 export class CssQueryNode {
+  declare tag: any
+  declare id: any
+  declare classList: any
+  declare attrs: { name: any; getValues: any; matcher: any }[]
+  declare pseudo: any[]
+
   constructor(compound) {
     if (typeof compound === 'string') compound = parseCompoundSelector(compound)
     this.tag = compound.tag

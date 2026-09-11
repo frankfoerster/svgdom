@@ -19,3 +19,8 @@ Object.defineProperties(HTMLScriptElement.prototype, {
     }
   }
 })
+
+export interface HTMLScriptElement {
+  src: string | null
+  type: string | null
+}

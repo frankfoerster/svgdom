@@ -1,6 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'assert'
-import { describe, it } from 'mocha'
-import { createHTMLDocument } from '../main-module.js'
+import { createHTMLDocument } from '../src/index.js'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
 

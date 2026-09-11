@@ -1,9 +1,10 @@
+import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
 import {
   createDocument,
   createHTMLDocument,
   createSVGDocument
-} from '../main-module.js'
+} from '../src/index.js'
 
 describe('Document head and body accessors', () => {
   it('returns null for empty and non-HTML documents', () => {

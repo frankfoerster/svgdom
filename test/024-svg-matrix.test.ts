@@ -1,5 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
-import { SVGMatrix, SVGPoint } from '../main-module.js'
+import { SVGMatrix, SVGPoint } from '../src/index.js'
 
 const transformed = (matrix, x = 0, y = 0) => {
   const point = new SVGPoint()

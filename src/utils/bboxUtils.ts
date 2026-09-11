@@ -12,7 +12,11 @@ const applyTransformation = (segments, node, applyTransformations) => {
   return segments
 }
 
-export const getSegments = (node, applyTransformations, rbox = false) => {
+export const getSegments = (
+  node,
+  applyTransformations = false,
+  rbox = false
+) => {
   const segments = getPathSegments(node, rbox)
   return applyTransformation(segments, node, applyTransformations)
 }
@@ -35,7 +39,7 @@ const getPathSegments = (node, rbox) => {
       }
     // ATTENTION: FALL THROUGH
     // Because normal bbox is calculated by the content of the element and not its width and height
-    // eslint-disable-next-line
+    // oxlint-disable-next-line
     case 'g':
     case 'clipPath':
     case 'a':

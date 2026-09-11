@@ -1,6 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'assert'
-import { describe, it } from 'mocha'
-import { createSVGWindow, CSSStyleDeclaration } from '../main-module.js'
+import { createSVGWindow, CSSStyleDeclaration } from '../src/index.js'
 
 const createElement = () => {
   const window = createSVGWindow()

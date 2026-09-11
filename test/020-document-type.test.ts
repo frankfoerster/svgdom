@@ -1,5 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
-import { DOMImplementation, HTMLParser } from '../main-module.js'
+import { DOMImplementation, HTMLParser } from '../src/index.js'
 
 describe('DocumentType ownership', () => {
   it('creates a detached doctype that can be assigned to a document', () => {

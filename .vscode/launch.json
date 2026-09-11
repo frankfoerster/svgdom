@@ -8,8 +8,10 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\index.cjs"
+      "program": "${workspaceFolder}/dist/src/index.js"
     }
   ]
 }

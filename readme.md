@@ -2,6 +2,8 @@
 
 > Straightforward DOM implementation to make SVG.js run headless on Node.js
 
+This fork replaces the vulnerable `image-size` dependency with the maintained fork `@carboneio/image-size`.
+
 While this dom implementation was designed to run svg.js on node, it now is much more feature complete and can be used by anyone needing an xml, svg or html dom.
 
 Typical uses include generating SVG files on a server, testing SVG code without a browser, and building asset-pipeline tools that inspect or transform SVG geometry.
@@ -11,42 +13,42 @@ Typical uses include generating SVG files on a server, testing SVG code without 
 _for older versions of svg.js checkout older versions of svgdom_
 
 ```
-pnpm add @svgdotjs/svg.js svgdom
+npm install @svgdotjs/svg.js svgdom
 ```
 
 ```js
-import { createSVGWindow } from 'svgdom'
-import { SVG, registerWindow } from '@svgdotjs/svg.js'
+import { createSVGWindow } from 'svgdom';
+import { SVG, registerWindow } from '@svgdotjs/svg.js';
 
 // returns a window with a document and an svg root node
-const window = createSVGWindow()
-const document = window.document
+const window = createSVGWindow();
+const document = window.document;
 
 // register window and document
-registerWindow(window, document)
+registerWindow(window, document);
 
 // create canvas
-const canvas = SVG(document.documentElement)
+const canvas = SVG(document.documentElement);
 
 // use svg.js as normal
-canvas.rect(100, 100).fill('yellow').move(50, 50)
+canvas.rect(100, 100).fill('yellow').move(50, 50);
 
 // get your svg as string
-console.log(canvas.svg())
+console.log(canvas.svg());
 // or
-console.log(canvas.node.outerHTML)
+console.log(canvas.node.outerHTML);
 ```
 
 ## Create an HTML Dom or XML Dom
 
 ```js
 // create HTML window with a document and an html root node
-import { createHTMLWindow } from 'svgdom'
-const window = createHTMLWindow()
+import { createHTMLWindow } from 'svgdom';
+const window = createHTMLWindow();
 
 // create XML window with a document and a given xml root node
-import { createWindow } from 'svgdom'
-const window = createWindow(namespaceURI, rootNode)
+import { createWindow } from 'svgdom';
+const window = createWindow(namespaceURI, rootNode);
 // e.g. createWindow('http://www.w3.org/1998/Math/MathML', 'math')
 ```
 
@@ -55,7 +57,7 @@ const window = createWindow(namespaceURI, rootNode)
 On Node.js 22.13 or newer, svgdom can be loaded directly with `require()`:
 
 ```js
-const { createSVGWindow } = require('svgdom')
+const { createSVGWindow } = require('svgdom');
 ```
 
 ## Intentional DOM deviations
@@ -95,7 +97,7 @@ Almost all functions of svg.js work properly with svgdom. However there are a fe
 
 - font properties like bold, italic... are only supported when you explicitely load that font e.g.
   ```js
-  setFontFamilyMappings({ 'Arial-italic': 'arial_italic.ttf' })
+  setFontFamilyMappings({ 'Arial-italic': 'arial_italic.ttf' });
   ```
 - `querySelector` only supports the following pseudo classes:
   - `empty`
@@ -128,3 +130,19 @@ If you need a certain feature don't hesistate to open an issue or submit a pull 
 Last thing to say: **childNodes is an array!** (yet)
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=ulima.ums%40googlemail.com&lc=US&item_name=SVG.JS&currency_code=EUR&bn=PP-DonationsBF%3Abtn_donate_74x21.png%3ANonHostedGuest) or [![Sponsor](https://img.shields.io/badge/Sponsor-svgdom-green.svg)](https://github.com/sponsors/Fuzzyma)
+
+## Development
+
+Use Node.js 22.13 or newer and npm. Source files and tests are written in TypeScript.
+
+```sh
+npm ci
+npm run typecheck
+npm test
+npm run test:package
+npm run lint
+npm run format:check
+npm run build
+```
+
+`npm run test:package` checks the built ESM and CommonJS entry points and bundled font. `npm run test:watch` starts Vitest in watch mode. `npm run format` formats files with Oxfmt. The build emits JavaScript, declarations, and source maps into `dist/`; npm packages include that build and the bundled font. `npm ci` builds the package automatically. After editing source, rebuild before loading a local checkout with `import` or `require`.

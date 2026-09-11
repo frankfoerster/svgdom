@@ -1,5 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
-import { createSVGDocument } from '../main-module.js'
+import { createSVGDocument } from '../src/index.js'
 
 describe('Element.outerHTML', () => {
   it('replaces an attached element in its parent namespace', () => {

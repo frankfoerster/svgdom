@@ -1,9 +1,9 @@
+import { describe, it } from 'vitest'
 // @ts-check
 
 import assert from 'assert'
 import { CssQuery } from '../src/other/CssQuery.js'
-import { describe, it } from 'mocha'
-import { createHTMLDocument } from '../main-module.js'
+import { createHTMLDocument } from '../src/index.js'
 import { svg } from '../src/utils/namespaces.js'
 
 const document = createHTMLDocument()

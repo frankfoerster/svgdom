@@ -1,3 +1,4 @@
+import type { Element } from '../Element.js'
 import { NodeFilter } from '../NodeFilter.js'
 import { NodeIterator } from '../../utils/NodeIterator.js'
 import { normalizeNamespace } from '../../utils/namespaces.js'
@@ -10,7 +11,7 @@ const hasClass = (node, name) => {
 }
 
 const elementAccess = {
-  getElementsByTagName(name) {
+  getElementsByTagName(name: string): Element[] {
     name = String(name)
     const iter = new NodeIterator(
       this,
@@ -24,7 +25,7 @@ const elementAccess = {
     return [...iter]
   },
 
-  getElementsByTagNameNS(ns, name) {
+  getElementsByTagNameNS(ns: string | null, name: string): Element[] {
     // Empty namespace and wildcard namespace are distinct inputs.
     ns = ns === '*' ? '*' : normalizeNamespace(ns)
     name = String(name)
@@ -44,7 +45,7 @@ const elementAccess = {
     return [...iter]
   },
 
-  getElementsByClassName(name) {
+  getElementsByClassName(name: string): Element[] {
     const iter = new NodeIterator(
       this,
       NodeFilter.SHOW_ELEMENT,

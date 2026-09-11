@@ -123,7 +123,7 @@ export class SVGGraphicsElement extends SVGElement {
       // split transformations
       .split(regex.transforms)
       .slice(0, -1)
-      .map(function (str) {
+      .map(function (str): [string, number[]] {
         // generate key => value pairs
         const kv = str.trim().split('(')
         return [

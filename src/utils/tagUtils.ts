@@ -239,7 +239,7 @@ const cloneShallow = (node, document) => {
   }
 }
 
-export const cloneNode = function (node, deep = false, document) {
+export const cloneNode = function (node, deep = false, document = undefined) {
   const isDocument = node.nodeType === node.DOCUMENT_NODE
   // A cloned Document owns its cloned descendants. Other clones retain their
   // source document unless an internal recursive/import target is supplied.

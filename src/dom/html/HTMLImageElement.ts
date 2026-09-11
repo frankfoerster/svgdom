@@ -1,9 +1,13 @@
-import { imageSizeFromFile } from 'image-size/fromFile'
+import { imageSizeFromFile } from '@carboneio/image-size/fromFile'
 import { Event } from '../Event.js'
 import { HTMLElement } from './HTMLElement.js'
 
 export class HTMLImageElement extends HTMLElement {
-  constructor(...args) {
+  declare naturalWidth: number
+  declare naturalHeight: number
+  declare complete: boolean
+
+  constructor(...args: ConstructorParameters<typeof HTMLElement>) {
     super(...args)
     this.naturalWidth = 0
     this.naturalHeight = 0
@@ -47,3 +51,9 @@ Object.defineProperties(HTMLImageElement.prototype, {
     }
   }
 })
+
+export interface HTMLImageElement {
+  src: string | null
+  height: string | number
+  width: string | number
+}

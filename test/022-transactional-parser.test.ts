@@ -1,9 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
-import {
-  createDocument,
-  createSVGDocument,
-  HTMLParser
-} from '../main-module.js'
+import { createDocument, createSVGDocument, HTMLParser } from '../src/index.js'
 
 describe('transactional XML parsing', () => {
   it('preserves innerHTML when fragment parsing fails', () => {

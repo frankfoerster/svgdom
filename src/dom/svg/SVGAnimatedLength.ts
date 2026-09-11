@@ -1,10 +1,9 @@
-// @ts-check
 import { SVGLength } from './SVGLength.js'
 
 export class SVGAnimatedLength {
-  baseVal
+  baseVal: SVGLength
 
-  constructor(element, attributeName) {
+  constructor(element: import('../Element.js').Element, attributeName: string) {
     this.baseVal = new SVGLength(element, attributeName)
   }
 

@@ -1,3 +1,4 @@
+import { describe, it } from 'vitest'
 import assert from 'assert'
 import {
   createDocument,
@@ -5,7 +6,7 @@ import {
   createSVGDocument,
   Document,
   HTMLParser
-} from '../main-module.js'
+} from '../src/index.js'
 import { SVGRectElement } from '../src/dom/svg/SVGRectElement.js'
 
 const svg = 'http://www.w3.org/2000/svg'

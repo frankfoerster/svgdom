@@ -1,5 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
-import { createSVGDocument } from '../main-module.js'
+import { createSVGDocument } from '../src/index.js'
 
 describe('Node normalization and equality', () => {
   it('preserves elements and normalizes descendant text', () => {

@@ -1,5 +1,6 @@
+import { describe, it, beforeEach } from 'vitest'
 import assert from 'assert'
-import { createSVGDocument } from '../main-module.js'
+import { createSVGDocument } from '../src/index.js'
 
 let svgDoc
 let svgRoot

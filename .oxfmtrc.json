@@ -1,0 +1,9 @@
+{
+  "arrowParens": "avoid",
+  "endOfLine": "lf",
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "ignorePatterns": ["dist/**", "node_modules/**"],
+  "printWidth": 80
+}

@@ -1,9 +1,9 @@
+import { describe, it, beforeEach } from 'vitest'
 // @ts-check
 
 import assert from 'assert'
 import { SVGLength } from '../src/dom/svg/SVGLength.js'
-import { createSVGDocument } from '../main-module.js'
-import { describe, it } from 'mocha'
+import { createSVGDocument } from '../src/index.js'
 
 describe('SVGRectElement', function () {
   /** @type {SVGRectElement} */
@@ -11,7 +11,7 @@ describe('SVGRectElement', function () {
   /** @type {Element} */
   let svgElement
 
-  this.beforeEach(function () {
+  beforeEach(function () {
     const svgDoc = createSVGDocument()
     svgElement = svgDoc.documentElement
     svgElement.innerHTML = '<rect width="10" height="1in"/>'

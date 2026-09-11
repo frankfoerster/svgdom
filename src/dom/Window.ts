@@ -24,21 +24,27 @@ import { SVGTextContentElement } from './svg/SVGTextContentElement.js'
 import { camelCase } from '../utils/strUtils.js'
 import * as defaults from '../utils/defaults.js'
 
-export class Window extends EventTarget {
+export class Window<
+  Namespace extends string | null = string | null
+> extends EventTarget {
+  declare document: Document<Namespace>
+  declare self: Window<Namespace>
+  declare Image: new (width?: number, height?: number) => HTMLImageElement
+
   constructor() {
     super()
-    this.document = new Document()
+    this.document = new Document<Namespace>()
     this.document.defaultView = this
     this.self = this
     const doc = this.document
     this.Image = class {
-      constructor(width, height) {
-        const img = doc.createElement('img')
+      constructor(width?: number, height?: number) {
+        const img = doc.createElement('img') as HTMLImageElement
         if (width != null) img.setAttribute('width', width)
         if (height != null) img.setAttribute('height', height)
         return img
       }
-    }
+    } as new (width?: number, height?: number) => HTMLImageElement
   }
 
   getComputedStyle(node) {
@@ -111,3 +117,10 @@ const winProps = {
 }
 
 extend(Window, winProps)
+
+type WindowProperties = typeof winProps
+export interface Window<
+  Namespace extends string | null = string | null
+> extends WindowProperties {
+  document: Document<Namespace>
+}

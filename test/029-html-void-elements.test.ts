@@ -1,5 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
-import { createHTMLDocument, createSVGDocument } from '../main-module.js'
+import { createHTMLDocument, createSVGDocument } from '../src/index.js'
 import { html } from '../src/utils/namespaces.js'
 
 const voidNames = [

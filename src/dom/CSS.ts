@@ -3,7 +3,7 @@ const isAsciiLetter = codeUnit =>
   (codeUnit >= 0x41 && codeUnit <= 0x5a) ||
   (codeUnit >= 0x61 && codeUnit <= 0x7a)
 
-const escape = function (value) {
+const escape = function (value?: unknown) {
   if (arguments.length === 0) {
     throw new TypeError('CSS.escape requires an argument')
   }

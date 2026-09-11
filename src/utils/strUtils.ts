@@ -14,7 +14,7 @@ export const fullHex = function (hex) {
 }
 
 export const hexToRGB = function (valOrMap) {
-  if ((typeof valOrMap) instanceof Map) {
+  if (valOrMap instanceof Map) {
     for (const [key, val] of valOrMap) {
       valOrMap.set(key, hexToRGB(val))
     }

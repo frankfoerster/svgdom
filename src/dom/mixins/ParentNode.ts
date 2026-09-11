@@ -1,3 +1,4 @@
+import type { Element } from '../Element.js'
 import { CssQuery } from '../../other/CssQuery.js'
 import { NodeIterator } from '../../utils/NodeIterator.js'
 import { NodeFilter } from '../NodeFilter.js'
@@ -26,12 +27,31 @@ const runQuery = (root, selector, single = false) => {
   return nodes
 }
 
-const ParentNode = {
-  querySelectorAll(query) {
-    return runQuery(this, query)
+export interface ParentNode {
+  querySelector<T extends Element = Element>(query: string): T | null
+  querySelectorAll<T extends Element = Element>(query: string): T[]
+  prepend(...nodes: unknown[]): void
+  append(...nodes: unknown[]): void
+  replaceChildren(...nodes: unknown[]): void
+  readonly children: Element[]
+  readonly firstElementChild: Element | null
+  readonly lastElementChild: Element | null
+  readonly childElementCount: number
+}
+
+const parentNodeMethods: Pick<
+  ParentNode,
+  | 'querySelector'
+  | 'querySelectorAll'
+  | 'prepend'
+  | 'append'
+  | 'replaceChildren'
+> = {
+  querySelectorAll<T extends Element = Element>(query: string): T[] {
+    return runQuery(this, query) as T[]
   },
 
-  querySelector(query) {
+  querySelector<T extends Element = Element>(query: string): T | null {
     return runQuery(this, query, true)[0] || null
   },
 
@@ -58,6 +78,8 @@ const ParentNode = {
     replaceAllChildren(this, nodesToNodes(nodes, document))
   }
 }
+
+const ParentNode = parentNodeMethods as ParentNode
 
 Object.defineProperties(ParentNode, {
   children: {

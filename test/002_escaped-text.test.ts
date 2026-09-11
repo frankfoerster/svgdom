@@ -1,4 +1,5 @@
-import { createSVGDocument } from '../main-module.js'
+import { describe, it } from 'vitest'
+import { createSVGDocument } from '../src/index.js'
 import assert from 'assert'
 
 describe('escaped-text', () => {

@@ -1,3 +1,4 @@
+import type { Element } from './Element.js'
 import { Node } from './Node.js'
 import { Comment } from './Comment.js'
 import { Text } from './Text.js'
@@ -113,12 +114,16 @@ const supportedFeatures = {
 }
 
 export const DOMImplementation = {
-  hasFeature(feature, version) {
+  hasFeature(feature: string, version = ''): boolean {
     const f = supportedFeatures[(feature || '').toLowerCase()]
     return (f && f[version || '']) || false
   },
 
-  createDocumentType(qualifiedName, publicId, systemId) {
+  createDocumentType(
+    qualifiedName: string,
+    publicId: unknown = '',
+    systemId: unknown = ''
+  ) {
     return new DocumentType(validateName(qualifiedName), {
       publicId: String(publicId ?? ''),
       systemId: String(systemId ?? ''),
@@ -126,7 +131,11 @@ export const DOMImplementation = {
     })
   },
 
-  createDocument(namespace, qualifiedName, doctype) {
+  createDocument<N extends string | null>(
+    namespace: N,
+    qualifiedName = '',
+    doctype: DocumentType | null = null
+  ) {
     const doc = new Document(namespace)
     if (doctype) {
       if (!(doctype instanceof DocumentType)) {
@@ -166,8 +175,14 @@ export const DOMImplementation = {
   }
 }
 
-export class Document extends Node {
-  constructor(ns) {
+export class Document<
+  Namespace extends string | null = string | null
+> extends Node {
+  declare nodeType: number
+  declare implementation: typeof DOMImplementation
+  declare defaultView: import('./Window.js').Window | null
+
+  constructor(ns: Namespace = null) {
     super('#document', {}, ns)
     this.nodeType = Node.DOCUMENT_NODE
     this.implementation = DOMImplementation
@@ -175,14 +190,14 @@ export class Document extends Node {
   }
 
   // https://dom.spec.whatwg.org/#dom-document-createattribute
-  createAttribute(localName) {
+  createAttribute(localName: string) {
     if (this.namespaceURI === html) {
       localName = localName.toLowerCase()
     }
     return this.createAttributeNS(null, localName, true)
   }
 
-  createAttributeNS(ns, qualifiedName, local = false) {
+  createAttributeNS(ns: string | null, qualifiedName: string, local = false) {
     // `local` is used by createAttribute()/setAttribute(): in that API a colon
     // belongs to the local name and does not introduce a namespace prefix.
     if (local) {
@@ -195,36 +210,45 @@ export class Document extends Node {
     return new Attr(qualifiedName, { ownerDocument: this, local }, ns)
   }
 
-  createCDATASection(text) {
+  createCDATASection(text: unknown) {
     if (this.namespaceURI === html) throw new Error('Not Supported Error')
 
-    text = String(text)
-    if (text.includes(']]>')) throw new Error('Invalid Character Error')
+    const value = String(text)
+    if (value.includes(']]>')) throw new Error('Invalid Character Error')
     return new CDATASection('#cdata-section', {
-      nodeValue: text,
+      nodeValue: value,
       ownerDocument: this
     })
   }
 
-  createComment(text) {
+  createComment(text: unknown) {
     return new Comment('#comment', {
       nodeValue: String(text),
       ownerDocument: this
     })
   }
 
-  createDocumentFragment(_name) {
+  createDocumentFragment() {
     return new DocumentFragment('#document-fragment', { ownerDocument: this })
   }
 
-  createElement(localName) {
+  createElement<K extends string>(localName: K): CreatedElement<Namespace, K> {
     // svgdom historically inherits the document namespace here. This differs
     // from browser XML DOMs, but keeps the convenient SVG creation API stable.
-    if (this.namespaceURI === html) localName = String(localName).toLowerCase()
-    return this.createElementNS(this.namespaceURI, localName, true)
+    if (this.namespaceURI === html)
+      localName = String(localName).toLowerCase() as K
+    return this.createElementNS(
+      this.namespaceURI,
+      localName,
+      true
+    ) as CreatedElement<Namespace, K>
   }
 
-  createElementNS(ns, qualifiedName, local = false) {
+  createElementNS<N extends string | null, K extends string>(
+    ns: N,
+    qualifiedName: K,
+    local = false
+  ): CreatedElement<N, K> {
     let localName
     // See createAttributeNS(): non-namespace creation deliberately keeps the
     // complete supplied name as the local name.
@@ -247,10 +271,10 @@ export class Document extends Node {
         local
       },
       ns
-    )
+    ) as CreatedElement<N, K>
   }
 
-  createTextNode(text) {
+  createTextNode(text: unknown) {
     return new Text('#text', {
       nodeValue: String(text),
       ownerDocument: this
@@ -261,15 +285,15 @@ export class Document extends Node {
     return 'CSS1Compat' // always be in standards-mode
   }
 
-  get body() {
+  get body(): HTMLElement | null {
     return getChildByTagName(this.documentElement, 'body')
   }
 
-  get head() {
+  get head(): HTMLElement | null {
     return getChildByTagName(this.documentElement, 'head')
   }
 
-  get documentElement() {
+  get documentElement(): Element | null {
     return (
       this.childNodes.find(node => node.nodeType === Node.ELEMENT_NODE) || null
     )
@@ -279,3 +303,42 @@ export class Document extends Node {
 mixin(elementAccess, Document)
 mixin(ParentNode, Document)
 mixin(NonElementParentNode, Document)
+
+type elementAccessInterface = typeof elementAccess
+type ParentNodeInterface = typeof ParentNode
+type NonElementParentNodeInterface = typeof NonElementParentNode
+export interface Document<Namespace extends string | null = string | null>
+  extends
+    elementAccessInterface,
+    ParentNodeInterface,
+    NonElementParentNodeInterface {
+  namespaceURI: Namespace
+}
+
+export interface SVGElementTagNameMap {
+  svg: SVGSVGElement
+  path: SVGPathElement
+  circle: SVGCircleElement
+  ellipse: SVGEllipseElement
+  line: SVGLineElement
+  rect: SVGRectElement
+  foreignObject: SVGForeignObjectElement
+  image: SVGImageElement
+  text: SVGTextContentElement
+  tspan: SVGTextContentElement
+  tref: SVGTextContentElement
+  altGlyph: SVGTextContentElement
+  textPath: SVGTextContentElement
+}
+export interface HTMLElementTagNameMap {
+  img: HTMLImageElement
+  link: HTMLLinkElement
+  script: HTMLScriptElement
+}
+export type CreatedElement<N, K extends string> = N extends typeof svg
+  ? K extends keyof SVGElementTagNameMap
+    ? SVGElementTagNameMap[K]
+    : SVGGraphicsElement
+  : K extends keyof HTMLElementTagNameMap
+    ? HTMLElementTagNameMap[K]
+    : HTMLElement

@@ -50,10 +50,14 @@ const showThisNode = (whatToShow, node) => {
 }
 
 export class NodeIterator {
+  declare root: any
+  declare whatToShow: any
+  declare filter: (node: any) => number
+
   constructor(
     root,
-    whatToShow = NodeFilter.SHOW_ALL,
-    filter = () => NodeFilter.FILTER_ACCEPT,
+    whatToShow: number = NodeFilter.SHOW_ALL,
+    filter: (node: any) => number = () => NodeFilter.FILTER_ACCEPT,
     includeParent = true
   ) {
     this.root = includeParent ? { childNodes: [root] } : root

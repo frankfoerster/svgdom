@@ -1,6 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'assert'
-import { describe, it } from 'mocha'
-import { createSVGDocument } from '../main-module.js'
+import { createSVGDocument } from '../src/index.js'
 
 describe('path bbox', () => {
   it('includes extrema from nearly quadratic cubic curves', () => {

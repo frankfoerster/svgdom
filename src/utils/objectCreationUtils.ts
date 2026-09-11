@@ -1,3 +1,6 @@
+// Runtime mixins are represented by declaration-merged TypeScript interfaces.
+// Use declare fields for installed properties so emitted class fields do not
+// shadow their prototype accessors.
 export const extend = (...modules) => {
   var methods, key, i
 

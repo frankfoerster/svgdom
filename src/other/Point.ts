@@ -1,8 +1,15 @@
+import type { MatrixLike } from '../dom/svg/SVGMatrix.js'
 import { SVGPoint } from '../dom/svg/SVGPoint.js'
 
 export class Point {
+  declare x: number
+  declare y: number
+
   // Initialize
-  constructor(x, y) {
+  constructor(
+    x?: number | [number, number] | { x: number; y: number },
+    y?: number
+  ) {
     const base = { x: 0, y: 0 }
 
     // ensure source as object
@@ -27,12 +34,12 @@ export class Point {
     return this.x * this.x + this.y * this.y
   }
 
-  add(x, y) {
+  add(x: number | [number, number] | { x: number; y: number }, y?: number) {
     const p = new Point(x, y)
     return new Point(this.x + p.x, this.y + p.y)
   }
 
-  angleTo(p) {
+  angleTo(p: Point) {
     let sign = Math.sign(this.x * p.y - this.y * p.x)
     sign = sign || 1
     return (
@@ -48,18 +55,18 @@ export class Point {
     return new Point(this)
   }
 
-  closeTo(p, eta = 0.00001) {
+  closeTo(p: Point, eta = 0.00001) {
     return (
       this.equals(p) ||
       (Math.abs(this.x - p.x) < eta && Math.abs(this.y - p.y) < eta)
     )
   }
 
-  div(factor) {
+  div(factor: number) {
     return new Point(this.x / factor, this.y / factor)
   }
 
-  dot(p) {
+  dot(p: Point) {
     return this.x * p.x + this.y * p.y
   }
 
@@ -67,7 +74,7 @@ export class Point {
     return this.x === p.x && this.y === p.y
   }
 
-  mul(factor) {
+  mul(factor: number) {
     return new Point(this.x * factor, this.y * factor)
   }
 
@@ -93,11 +100,11 @@ export class Point {
     return this.div(abs)
   }
 
-  reflectAt(p) {
+  reflectAt(p: Point) {
     return p.add(p.sub(this))
   }
 
-  sub(x, y) {
+  sub(x: number | [number, number] | { x: number; y: number }, y?: number) {
     const p = new Point(x, y)
     return new Point(this.x - p.x, this.y - p.y)
   }
@@ -111,11 +118,11 @@ export class Point {
   }
 
   // transform point with matrix
-  transform(matrix) {
+  transform(matrix: MatrixLike) {
     return new Point(this.native().matrixTransform(matrix))
   }
 
-  transformO(matrix) {
+  transformO(matrix: MatrixLike) {
     const { x, y } = this.native().matrixTransform(matrix)
     this.x = x
     this.y = y

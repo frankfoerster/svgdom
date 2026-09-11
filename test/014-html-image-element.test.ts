@@ -1,15 +1,14 @@
-import assert from 'assert'
+import { describe, it, beforeAll, afterAll, expect } from 'vitest'
 import { mkdtemp, rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 import path from 'path'
-import { after, before, describe, it } from 'mocha'
-import { createHTMLDocument } from '../main-module.js'
+import { createHTMLDocument } from '../src/index.js'
 
 describe('HTMLImageElement', function () {
   let directory
   let imagePath
 
-  before(async function () {
+  beforeAll(async function () {
     directory = await mkdtemp(path.join(tmpdir(), 'svgdom-'))
     imagePath = path.join(directory, 'pixel.png')
     await writeFile(
@@ -21,7 +20,7 @@ describe('HTMLImageElement', function () {
     )
   })
 
-  after(async function () {
+  afterAll(async function () {
     await rm(directory, { recursive: true })
   })
 
@@ -35,8 +34,28 @@ describe('HTMLImageElement', function () {
     image.src = imagePath
     await loaded
 
-    assert.strictEqual(image.naturalWidth, 1)
-    assert.strictEqual(image.naturalHeight, 1)
-    assert.strictEqual(image.complete, true)
+    expect(image.naturalWidth).toBe(1)
+    expect(image.naturalHeight).toBe(1)
+    expect(image.complete).toBe(true)
   })
+  it.each(['missing.png', 'invalid.png'])(
+    'emits an error for %s',
+    async filename => {
+      const failedPath = path.join(directory, filename)
+      if (filename === 'invalid.png')
+        await writeFile(failedPath, 'not an image')
+      const image = createHTMLDocument().createElement('img')
+      const failed = new Promise<void>((resolve, reject) => {
+        image.addEventListener('error', () => resolve())
+        image.addEventListener('load', () =>
+          reject(new Error('unexpected load'))
+        )
+      })
+      image.src = failedPath
+      await failed
+      expect(image.complete).toBe(false)
+      expect(image.naturalWidth).toBe(0)
+      expect(image.naturalHeight).toBe(0)
+    }
+  )
 })

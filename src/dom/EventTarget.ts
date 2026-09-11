@@ -1,19 +1,23 @@
+import type { Event } from './Event.js'
+
+export type EventListener = (event: Event) => void
+
 const $ = Symbol('private properties')
 
 export class EventTarget {
+  declare private [$]: { listeners: Record<string, EventListener[]> }
   constructor() {
-    this[$] = {}
-    this[$].listeners = {}
+    this[$] = { listeners: {} }
   }
 
-  addEventListener(type, callback) {
+  addEventListener(type: string, callback: EventListener) {
     if (!(type in this[$].listeners)) {
       this[$].listeners[type] = []
     }
     this[$].listeners[type].push(callback)
   }
 
-  dispatchEvent(event) {
+  dispatchEvent(event: Event) {
     if (!(event.type in this[$].listeners)) {
       return true
     }
@@ -28,7 +32,7 @@ export class EventTarget {
     return !event.defaultPrevented
   }
 
-  removeEventListener(type, callback) {
+  removeEventListener(type: string, callback: EventListener) {
     if (!(type in this[$].listeners)) {
       return
     }

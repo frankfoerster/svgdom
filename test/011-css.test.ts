@@ -1,8 +1,8 @@
+import { describe, it } from 'vitest'
 // @ts-check
 
 import assert from 'assert'
-import { describe, it } from 'mocha'
-import { createSVGWindow } from '../main-module.js'
+import { createSVGWindow } from '../src/index.js'
 
 describe('CSS', function () {
   const window = createSVGWindow()

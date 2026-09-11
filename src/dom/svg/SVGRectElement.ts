@@ -1,4 +1,3 @@
-// @ts-check
 import { SVGGraphicsElement } from './SVGGraphicsElement.js'
 import { SVGAnimatedLength } from './SVGAnimatedLength.js'
 

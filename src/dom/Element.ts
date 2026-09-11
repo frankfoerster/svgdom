@@ -1,3 +1,4 @@
+import type { Attr } from './Attr.js'
 import { Node } from './Node.js'
 
 import { elementAccess } from './mixins/elementAccess.js'
@@ -17,14 +18,18 @@ import { createCSSStyleDeclaration } from './CSSStyleDeclaration.js'
 import { CssQuery } from '../other/CssQuery.js'
 import { ParentNode } from './mixins/ParentNode.js'
 
-const getAttributeByNsAndLocalName = (el, ns, localName) => {
+const getAttributeByNsAndLocalName = (
+  el: Element,
+  ns: string | null,
+  localName: string
+) => {
   ns = normalizeNamespace(ns)
   return [...el.attrs].find(
     node => node.localName === localName && node.namespaceURI === ns
   )
 }
 
-const getAttributeByQualifiedName = (el, qualifiedName) => {
+const getAttributeByQualifiedName = (el: Element, qualifiedName: string) => {
   if (el.namespaceURI === html && el.ownerDocument.namespaceURI === html) {
     qualifiedName = qualifiedName.toLowerCase()
   }
@@ -32,7 +37,11 @@ const getAttributeByQualifiedName = (el, qualifiedName) => {
   return [...el.attrs].find(node => node.name === qualifiedName)
 }
 
-const attachAttribute = (element, node, oldAttribute) => {
+const attachAttribute = (
+  element: Element,
+  node: Attr,
+  oldAttribute: Attr | null | undefined
+) => {
   if (node.ownerDocument && node.ownerDocument !== element.ownerDocument) {
     throw new Error('Wrong Document Error')
   }
@@ -55,50 +64,57 @@ const attachAttribute = (element, node, oldAttribute) => {
 
 // https://dom.spec.whatwg.org/#dom-element-setattributens
 export class Element extends Node {
-  constructor(name, props, ns) {
+  declare style: import('./CSSStyleDeclaration.js').CSSStyleDeclaration
+  declare tagName: string
+
+  constructor(
+    name: string,
+    props: import('./Node.js').NodeProps = {},
+    ns: string | null = null
+  ) {
     super(name, props, ns)
 
     this.style = createCSSStyleDeclaration(this)
     this.tagName = this.nodeName
   }
 
-  getAttribute(qualifiedName) {
+  getAttribute(qualifiedName: string): string | null {
     const attr = this.getAttributeNode(qualifiedName)
     return attr ? attr.value : null
   }
 
-  getAttributeNode(qualifiedName) {
+  getAttributeNode(qualifiedName: string) {
     return getAttributeByQualifiedName(this, qualifiedName)
   }
 
-  getAttributeNodeNS(ns, localName) {
+  getAttributeNodeNS(ns: string | null, localName: string) {
     return getAttributeByNsAndLocalName(this, ns, localName)
   }
 
-  getAttributeNS(ns, localName) {
+  getAttributeNS(ns: string | null, localName: string): string | null {
     const attr = this.getAttributeNodeNS(ns, localName)
     return attr ? attr.value : null
   }
 
-  getBoundingClientRect() {
+  getBoundingClientRect(): import('../other/Box.js').Box {
     throw new Error('Only implemented for SVG Elements')
   }
 
-  hasAttribute(qualifiedName) {
+  hasAttribute(qualifiedName: string) {
     const attr = this.getAttributeNode(qualifiedName)
     return !!attr
   }
 
-  hasAttributeNS(ns, localName) {
+  hasAttributeNS(ns: string | null, localName: string) {
     const attr = this.getAttributeNodeNS(ns, localName)
     return !!attr
   }
 
-  matches(query) {
+  matches(query: string) {
     return new CssQuery(query).matches(this, this)
   }
 
-  closest(query) {
+  closest(query: string): Element | null {
     const cssQuery = new CssQuery(query)
     for (let node = this; node; node = node.parentNode) {
       if (node.nodeType === Node.ELEMENT_NODE && cssQuery.matches(node, this)) {
@@ -108,7 +124,7 @@ export class Element extends Node {
     return null
   }
 
-  removeAttribute(qualifiedName) {
+  removeAttribute(qualifiedName: string) {
     const attr = this.getAttributeNode(qualifiedName)
     if (attr) {
       this.removeAttributeNode(attr)
@@ -116,7 +132,7 @@ export class Element extends Node {
     return attr
   }
 
-  removeAttributeNode(node) {
+  removeAttributeNode(node: Attr) {
     if (!this.attrs.delete(node))
       throw new Error(
         'Attribute cannot be removed because it was not found on the element'
@@ -126,7 +142,7 @@ export class Element extends Node {
   }
 
   // call is: d.removeAttributeNS('http://www.mozilla.org/ns/specialspace', 'align', 'center');
-  removeAttributeNS(ns, localName) {
+  removeAttributeNS(ns: string | null, localName: string) {
     const attr = this.getAttributeNodeNS(ns, localName)
     if (attr) {
       this.removeAttributeNode(attr)
@@ -135,7 +151,7 @@ export class Element extends Node {
   }
 
   // Namespace-unaware attributes are identified by their qualified name.
-  setAttribute(qualifiedName, value) {
+  setAttribute(qualifiedName: string, value: unknown) {
     qualifiedName = validateName(qualifiedName)
 
     // We have to do that here because we cannot check if `this` is in the correct namespace
@@ -157,12 +173,12 @@ export class Element extends Node {
     attr.value = value
   }
 
-  setAttributeNode(node) {
+  setAttributeNode(node: Attr) {
     // The non-namespace variant replaces by qualified name.
     return attachAttribute(this, node, this.getAttributeNode(node.name))
   }
 
-  setAttributeNodeNS(node) {
+  setAttributeNodeNS(node: Attr) {
     // Prefixes are aliases and therefore do not participate in identity here.
     return attachAttribute(
       this,
@@ -172,7 +188,7 @@ export class Element extends Node {
   }
 
   // call is: d.setAttributeNS('http://www.mozilla.org/ns/specialspace', 'spec:align', 'center');
-  setAttributeNS(namespace, name, value) {
+  setAttributeNS(namespace: string | null, name: string, value: unknown) {
     const [ns, prefix, localName] = validateAndExtract(namespace, name)
 
     let attr = this.getAttributeNodeNS(ns, localName)
@@ -209,7 +225,7 @@ export class Element extends Node {
     this.setAttribute('id', id)
   }
 
-  get innerHTML() {
+  get innerHTML(): string {
     return this.childNodes
       .map(node => {
         if (node.nodeType === Node.TEXT_NODE) return htmlEntities(node.data)
@@ -220,16 +236,16 @@ export class Element extends Node {
       .join('')
   }
 
-  set innerHTML(str) {
+  set innerHTML(str: unknown) {
     const fragment = parseFragment(str, this)
     this.replaceChildren(fragment)
   }
 
-  get outerHTML() {
+  get outerHTML(): string {
     return tag(this)
   }
 
-  set outerHTML(str) {
+  set outerHTML(str: unknown) {
     const parent = this.parentNode
     if (!parent) return
     // A document cannot be the fragment parsing context because the replacement
@@ -248,3 +264,14 @@ mixin(ParentNode, Element)
 mixin(elementAccess, Element)
 mixin(NonDocumentTypeChildNode, Element)
 mixin(ChildNode, Element)
+
+type ParentNodeInterface = typeof ParentNode
+type elementAccessInterface = typeof elementAccess
+type NonDocumentTypeChildNodeInterface = typeof NonDocumentTypeChildNode
+type ChildNodeInterface = typeof ChildNode
+export interface Element
+  extends
+    ParentNodeInterface,
+    elementAccessInterface,
+    NonDocumentTypeChildNodeInterface,
+    ChildNodeInterface {}

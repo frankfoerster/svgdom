@@ -1,5 +1,6 @@
+import { describe, it } from 'vitest'
 import assert from 'node:assert/strict'
-import { createSVGDocument, DOMImplementation } from '../main-module.js'
+import { createSVGDocument, DOMImplementation } from '../src/index.js'
 import { SVGRectElement } from '../src/dom/svg/SVGRectElement.js'
 
 describe('Node cloning', () => {

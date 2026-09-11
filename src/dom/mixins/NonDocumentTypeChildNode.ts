@@ -1,4 +1,7 @@
-export const NonDocumentTypeChildNode = {}
+export const NonDocumentTypeChildNode = {} as {
+  readonly previousElementSibling: import('../Element.js').Element | null
+  readonly nextElementSibling: import('../Element.js').Element | null
+}
 
 Object.defineProperties(NonDocumentTypeChildNode, {
   previousElementSibling: {

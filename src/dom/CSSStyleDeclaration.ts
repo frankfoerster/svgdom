@@ -10,11 +10,14 @@ const isArrayIndex = key =>
   typeof key === 'string' && /^(?:0|[1-9]\d*)$/.test(key)
 
 export class CSSStyleDeclaration {
-  constructor(element) {
+  declare private _element: import('./Element.js').Element;
+  [property: string]: any
+
+  constructor(element: import('./Element.js').Element) {
     Object.defineProperty(this, '_element', { value: element })
   }
 
-  getPropertyPriority(propertyName) {
+  getPropertyPriority(propertyName: string) {
     const name = normalizeStylePropertyName(propertyName)
     return (
       this._declarations().find(declaration => declaration.name === name)
@@ -22,7 +25,7 @@ export class CSSStyleDeclaration {
     )
   }
 
-  getPropertyValue(propertyName) {
+  getPropertyValue(propertyName: string) {
     const name = normalizeStylePropertyName(propertyName)
     return (
       this._declarations().find(declaration => declaration.name === name)
@@ -30,11 +33,11 @@ export class CSSStyleDeclaration {
     )
   }
 
-  item(index) {
+  item(index: number | string | symbol) {
     return this._declarations()[Number(index) >>> 0]?.name || ''
   }
 
-  removeProperty(propertyName) {
+  removeProperty(propertyName: string) {
     const name = normalizeStylePropertyName(propertyName)
     const declarations = this._declarations()
     const index = declarations.findIndex(
@@ -47,7 +50,7 @@ export class CSSStyleDeclaration {
     return value
   }
 
-  setProperty(propertyName, value = '', priority = '') {
+  setProperty(propertyName: string, value = '', priority = '') {
     const name = normalizeStylePropertyName(propertyName)
     if (!name) return
 
@@ -114,7 +117,9 @@ Object.defineProperty(CSSStyleDeclaration.prototype, Symbol.toStringTag, {
   value: 'CSSStyleDeclaration'
 })
 
-export const createCSSStyleDeclaration = element => {
+export const createCSSStyleDeclaration = (
+  element: import('./Element.js').Element
+) => {
   const declaration = new CSSStyleDeclaration(element)
 
   return new Proxy(declaration, {

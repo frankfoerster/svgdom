@@ -23,26 +23,29 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Check package entry points and fonts
+        run: npm run test:package
 
       - name: Test
-        run: pnpm test
+        run: npm test
 
       - name: Lint
-        run: pnpm lint
+        run: npm run lint
 
       - name: Check formatting
-        run: pnpm format:check
+        run: npm run format:check
 
   svg-js-integration:
     runs-on: ubuntu-latest
@@ -60,35 +63,30 @@ jobs:
           ref: 7e06420e056de92c4839f03b4406605850b04168
           path: svg.js
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: 11.26.0
-
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
 
       - name: Install svgdom dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
         working-directory: svgdom
 
-      # svg.js 3.2.7 pins pnpm 11.13.0, which pnpm refuses as a broken release.
-      - name: Replace the broken pnpm pin of svg.js
-        run: npm pkg set packageManager=pnpm@11.26.0
-        working-directory: svg.js
+      - name: Build svgdom
+        run: npm run build
+        working-directory: svgdom
 
+      # The pinned upstream checkout has no npm lockfile.
       - name: Install svg.js dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm install --package-lock=false
         working-directory: svg.js
 
       - name: Link the checked-out svgdom into svg.js
         run: |
-          unlink node_modules/svgdom
+          rm -rf node_modules/svgdom
           ln -s "$GITHUB_WORKSPACE/svgdom" node_modules/svgdom
         working-directory: svg.js
 
       - name: Test svg.js with svgdom
-        run: pnpm test:svgdom
+        run: npm run test:svgdom
         working-directory: svg.js

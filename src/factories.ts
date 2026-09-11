@@ -4,16 +4,20 @@ import * as namespaces from './utils/namespaces.js'
 
 const { createDocument, createHTMLDocument } = DOMImplementation
 
-const createWindow = (...args) => {
-  const window = new Window()
-  const document = createDocument(...args)
+const createWindow = <N extends string | null>(
+  namespace: N,
+  qualifiedName = '',
+  doctype: Parameters<typeof createDocument>[2] = null
+) => {
+  const window = new Window<N>()
+  const document = createDocument(namespace, qualifiedName, doctype)
   window.document = document
   document.defaultView = window
   return window
 }
 
-const createHTMLWindow = title => {
-  const window = new Window()
+const createHTMLWindow = (title = '') => {
+  const window = new Window<typeof namespaces.html>()
   const document = DOMImplementation.createHTMLDocument(title)
   window.document = document
   document.defaultView = window

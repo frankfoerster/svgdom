@@ -1,3 +1,15 @@
+import type { Document } from './Document.js'
+import type { Attr } from './Attr.js'
+import type { CharacterData } from './CharacterData.js'
+import type { DocumentType } from './DocumentType.js'
+
+export interface NodeProps {
+  local?: boolean
+  nodeValue?: string | null
+  attrs?: Set<Attr>
+  ownerDocument?: Document | null
+  childNodes?: Node[]
+}
 import { extend, extendStatic } from '../utils/objectCreationUtils.js'
 
 import { EventTarget } from './EventTarget.js'
@@ -199,7 +211,30 @@ export const replaceAllChildren = (parent, nodes) => {
 }
 
 export class Node extends EventTarget {
-  constructor(name = '', props = {}, ns = null) {
+  declare static ELEMENT_NODE: 1
+  declare static ATTRIBUTE_NODE: 2
+  declare static TEXT_NODE: 3
+  declare static CDATA_SECTION_NODE: 4
+  declare static ENTITY_REFERENCE_NODE: 5
+  declare static ENTITY_NODE: 6
+  declare static PROCESSING_INSTRUCTION_NODE: 7
+  declare static COMMENT_NODE: 8
+  declare static DOCUMENT_NODE: 9
+  declare static DOCUMENT_TYPE_NODE: 10
+  declare static DOCUMENT_FRAGMENT_NODE: 11
+  declare static NOTATION_NODE: 12
+
+  declare localName: string
+  declare prefix: string | null
+  declare nodeName: string
+  declare namespaceURI: string | null
+  declare nodeType: number
+  declare childNodes: any[]
+  declare attrs: Set<Attr>
+  declare ownerDocument: Document | null
+  declare parentNode: any
+
+  constructor(name = '', props: NodeProps = {}, ns: string | null = null) {
     super()
 
     // If props.local is true, the element was Node was created with the non-namespace function
@@ -234,22 +269,22 @@ export class Node extends EventTarget {
     }
   }
 
-  appendChild(node) {
+  appendChild<T extends Node>(node: T): T {
     return this.insertBefore(node)
   }
 
-  cloneNode(deep = false) {
+  cloneNode(deep = false): this {
     return cloneNode(this, deep)
   }
 
-  contains(node) {
+  contains(node: Node | null): boolean {
     for (let current = node; current; current = current.parentNode) {
       if (current === this) return true
     }
     return false
   }
 
-  getRootNode() {
+  getRootNode(): Node {
     if (!this.parentNode || this.nodeType === Node.DOCUMENT_NODE) return this
     return this.parentNode.getRootNode()
   }
@@ -258,17 +293,17 @@ export class Node extends EventTarget {
     return !!this.childNodes.length
   }
 
-  insertBefore(node, before) {
+  insertBefore<T extends Node>(node: T, before: Node | null = null): T {
     const plan = insertionPlan(this, node, before)
     applyInsertionPlan(this, plan)
     return node
   }
 
-  isDefaultNamespace(namespaceURI) {
+  isDefaultNamespace(namespaceURI: string | null) {
     return this.lookupNamespaceURI(null) === normalizeNamespace(namespaceURI)
   }
 
-  isEqualNode(node) {
+  isEqualNode(node: unknown): boolean {
     if (!(node instanceof Node)) return false
     if (
       this.nodeType !== node.nodeType ||
@@ -291,9 +326,12 @@ export class Node extends EventTarget {
 
     if (this.nodeType === Node.DOCUMENT_TYPE_NODE) {
       if (
-        this.publicId !== node.publicId ||
-        this.systemId !== node.systemId ||
-        this.internalSubset !== node.internalSubset
+        (this as unknown as DocumentType).publicId !==
+          (node as DocumentType).publicId ||
+        (this as unknown as DocumentType).systemId !==
+          (node as DocumentType).systemId ||
+        (this as unknown as DocumentType).internalSubset !==
+          (node as DocumentType).internalSubset
       ) {
         return false
       }
@@ -304,11 +342,14 @@ export class Node extends EventTarget {
     )
   }
 
-  isSameNode(node) {
+  isSameNode(node: Node | null) {
     return this === node
   }
 
-  lookupNamespacePrefix(namespaceURI, originalElement) {
+  lookupNamespacePrefix(
+    namespaceURI: string | null,
+    originalElement: Node = this
+  ): string | null {
     // `originalElement` prevents returning an ancestor prefix that has been
     // rebound between that ancestor and the node where lookup began.
     originalElement = originalElement || this
@@ -341,7 +382,7 @@ export class Node extends EventTarget {
     return null
   }
 
-  lookupNamespaceURI(prefix) {
+  lookupNamespaceURI(prefix: string | null): string | null {
     prefix = normalizeNamespace(prefix)
 
     switch (this.nodeType) {
@@ -379,8 +420,10 @@ export class Node extends EventTarget {
         }
         return null
       case Node.DOCUMENT_NODE:
-        return this.documentElement
-          ? this.documentElement.lookupNamespaceURI(prefix)
+        return (this as unknown as Document).documentElement
+          ? (this as unknown as Document).documentElement.lookupNamespaceURI(
+              prefix
+            )
           : null
       case Node.ENTITY_NODE:
       case Node.NOTATION_NODE:
@@ -388,8 +431,10 @@ export class Node extends EventTarget {
       case Node.DOCUMENT_FRAGMENT_NODE:
         return null
       case Node.ATTRIBUTE_NODE:
-        if (this.ownerElement) {
-          return this.ownerElement.lookupNamespaceURI(prefix)
+        if ((this as unknown as Attr).ownerElement) {
+          return (this as unknown as Attr).ownerElement.lookupNamespaceURI(
+            prefix
+          )
         }
         return null
       default:
@@ -400,8 +445,8 @@ export class Node extends EventTarget {
     }
   }
 
-  lookupPrefix(namespaceURI) {
-    namespaceURI = normalizeNamespace(namespaceURI)
+  lookupPrefix(namespaceValue: unknown): string | null {
+    const namespaceURI = normalizeNamespace(namespaceValue)
     if (namespaceURI === null) return null
 
     const type = this.nodeType
@@ -410,10 +455,10 @@ export class Node extends EventTarget {
       case Node.ELEMENT_NODE:
         return this.lookupNamespacePrefix(namespaceURI, this)
       case Node.DOCUMENT_NODE:
-        return this.documentElement
-          ? this.documentElement.lookupNamespacePrefix(
+        return (this as unknown as Document).documentElement
+          ? (this as unknown as Document).documentElement.lookupNamespacePrefix(
               namespaceURI,
-              this.documentElement
+              (this as unknown as Document).documentElement
             )
           : null
       case Node.ENTITY_NODE:
@@ -422,10 +467,10 @@ export class Node extends EventTarget {
       case Node.DOCUMENT_TYPE_NODE:
         return null // type is unknown
       case Node.ATTRIBUTE_NODE:
-        if (this.ownerElement) {
-          return this.ownerElement.lookupNamespacePrefix(
+        if ((this as unknown as Attr).ownerElement) {
+          return (this as unknown as Attr).ownerElement.lookupNamespacePrefix(
             namespaceURI,
-            this.ownerElement
+            (this as unknown as Attr).ownerElement
           )
         }
         return null
@@ -466,7 +511,7 @@ export class Node extends EventTarget {
     }
   }
 
-  removeChild(node) {
+  removeChild<T extends Node>(node: T): T {
     const index = this.childNodes.indexOf(node)
     if (index === -1) throw notFoundError()
     this.childNodes.splice(index, 1)
@@ -474,7 +519,7 @@ export class Node extends EventTarget {
     return node
   }
 
-  replaceChild(newChild, oldChild) {
+  replaceChild<T extends Node>(newChild: Node, oldChild: T): T {
     if (newChild === oldChild) {
       if (oldChild.parentNode !== this) throw notFoundError()
       return oldChild
@@ -498,15 +543,16 @@ export class Node extends EventTarget {
     return child || null
   }
 
-  get textContent() {
+  get textContent(): string | null {
     if (
       this.nodeType === Node.TEXT_NODE ||
       this.nodeType === Node.CDATA_SECTION_NODE ||
       this.nodeType === Node.COMMENT_NODE
     ) {
-      return this.data
+      return (this as unknown as CharacterData).data
     }
-    if (this.nodeType === Node.ATTRIBUTE_NODE) return this.value
+    if (this.nodeType === Node.ATTRIBUTE_NODE)
+      return (this as unknown as Attr).value
     if (
       this.nodeType !== Node.ELEMENT_NODE &&
       this.nodeType !== Node.DOCUMENT_FRAGMENT_NODE
@@ -529,18 +575,18 @@ export class Node extends EventTarget {
     }, '')
   }
 
-  set textContent(text) {
+  set textContent(text: unknown) {
     text = text == null ? '' : String(text)
     if (
       this.nodeType === Node.TEXT_NODE ||
       this.nodeType === Node.CDATA_SECTION_NODE ||
       this.nodeType === Node.COMMENT_NODE
     ) {
-      this.data = text
+      ;(this as unknown as CharacterData).data = text
       return
     }
     if (this.nodeType === Node.ATTRIBUTE_NODE) {
-      this.value = text
+      ;(this as unknown as Attr).value = text
       return
     }
     if (
@@ -567,3 +613,8 @@ export class Node extends EventTarget {
 
 extendStatic(Node, nodeTypes)
 extend(Node, nodeTypes)
+
+export interface Node extends NodeConstants {
+  nodeValue: string | null
+}
+type NodeConstants = typeof nodeTypes

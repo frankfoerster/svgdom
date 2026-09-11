@@ -1,5 +1,3 @@
-// @ts-check
-// @ts-ignore
 import { extendStatic } from '../../utils/objectCreationUtils.js'
 
 const unitTypes = {
@@ -55,14 +53,26 @@ const valuePattern =
   /^\s*([+-]?[0-9]*[.]?[0-9]+(?:e[+-]?[0-9]+)?)(em|ex|px|in|cm|mm|pt|pc|%)?\s*$/i
 
 export class SVGLength {
-  element
-  attributeName
+  declare static SVG_LENGTHTYPE_UNKNOWN: 0
+  declare static SVG_LENGTHTYPE_NUMBER: 1
+  declare static SVG_LENGTHTYPE_PERCENTAGE: 2
+  declare static SVG_LENGTHTYPE_EMS: 3
+  declare static SVG_LENGTHTYPE_EXS: 4
+  declare static SVG_LENGTHTYPE_PX: 5
+  declare static SVG_LENGTHTYPE_CM: 6
+  declare static SVG_LENGTHTYPE_MM: 7
+  declare static SVG_LENGTHTYPE_IN: 8
+  declare static SVG_LENGTHTYPE_PT: 9
+  declare static SVG_LENGTHTYPE_PC: 10
+
+  element: import('../Element.js').Element
+  attributeName: string
 
   /**
    * @param {Element} element
    * @param {string} attributeName
    */
-  constructor(element, attributeName) {
+  constructor(element: import('../Element.js').Element, attributeName: string) {
     this.element = element
     this.attributeName = attributeName
   }
@@ -78,7 +88,7 @@ export class SVGLength {
     return value * getUnitFactor(unit)
   }
 
-  set value(value) {
+  set value(value: number) {
     const unitFactor = getUnitFactor(this.unitType)
     this.element.setAttribute(
       this.attributeName,
@@ -90,7 +100,7 @@ export class SVGLength {
     return parseValue(this.element.getAttribute(this.attributeName))[0]
   }
 
-  set valueInSpecifiedUnits(value) {
+  set valueInSpecifiedUnits(value: number) {
     this.element.setAttribute(this.attributeName, value + unitString(this))
   }
 
@@ -100,7 +110,7 @@ export class SVGLength {
     return this.valueInSpecifiedUnits + unitString(this)
   }
 
-  set valueAsString(valueString) {
+  set valueAsString(valueString: string) {
     const [value, unit] = parseValue(valueString, false)
     const unitString = unitStringByConstant.get(unit) || ''
     this.element.setAttribute(this.attributeName, value + unitString)
@@ -116,7 +126,10 @@ export class SVGLength {
  * attribute is not of the correct format or if the attribute is not present on
  * the element, value 0 and unit SVG_LENGTHTYPE_NUMBER are returned.
  */
-function parseValue(valueString, fallback = true) {
+function parseValue(
+  valueString: string | null,
+  fallback = true
+): [number, number] {
   const [, rawValue, rawUnit] = (valueString || '').match(valuePattern) || []
   const unit = unitByString[(rawUnit || '').toLowerCase()]
   if (rawValue !== undefined && unit !== undefined) {
@@ -132,7 +145,7 @@ function parseValue(valueString, fallback = true) {
 /**
  * @param {number} unit  Unit constant
  */
-function getUnitFactor(unit) {
+function getUnitFactor(unit: number) {
   const unitFactor = unitFactors.get(unit)
   if (unitFactor === undefined) {
     throw new Error(unitFactor + ' is not a known unit constant')
@@ -147,7 +160,7 @@ function getUnitFactor(unit) {
  * @param {SVGLength} svgLength
  * @return {string}
  */
-function unitString(svgLength) {
+function unitString(svgLength: SVGLength) {
   return unitStringByConstant.get(svgLength.unitType) || ''
 }
 
