@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { existsSync } from 'node:fs';
-import { createSVGWindow, defaults } from 'svgdom';
+import { createSVGWindow, defaults } from '@frankfoerster/svgdom';
 
 // Use Node's real package resolution, outside Vitest's TypeScript transform.
-const commonJS = createRequire(import.meta.url)('svgdom');
+const commonJS = createRequire(import.meta.url)('@frankfoerster/svgdom');
 assert.equal(commonJS.createSVGWindow, createSVGWindow);
 assert.ok(existsSync(defaults.fontDir));
 const document = createSVGWindow().document;

@@ -6,7 +6,7 @@ import {
   HTMLImageElement,
   config,
   type FontConfig
-} from 'svgdom';
+} from '@frankfoerster/svgdom';
 
 const window = createSVGWindow();
 const rect: SVGRectElement = window.document.createElement('rect');
@@ -17,7 +17,8 @@ rect.width.baseVal.value = width + 10;
 const clone: SVGRectElement = rect.cloneNode(true);
 window.document.documentElement!.appendChild(clone);
 
-const image: HTMLImageElement = createHTMLWindow().document.createElement('img');
+const image: HTMLImageElement =
+  createHTMLWindow().document.createElement('img');
 image.addEventListener('load', event => {
   const type: string = event.type;
   console.log(type);
