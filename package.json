@@ -1,6 +1,6 @@
 {
   "name": "@frankfoerster/svgdom",
-  "version": "0.1.29",
+  "version": "1.0.0",
   "description": "Straightforward DOM implementation for SVG, HTML and XML",
   "keywords": [
     "dom",
